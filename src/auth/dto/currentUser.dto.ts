@@ -1,7 +1,9 @@
+import mongoose from 'mongoose';
 
 export class CuurentUser {
-	email: string
-	password: string
-	firstName: string
-	lastName: string
+  _id: mongoose.Types.ObjectId;
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
 }

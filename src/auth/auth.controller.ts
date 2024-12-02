@@ -83,7 +83,6 @@ export class AuthController {
     @CurrentUser() user: CuurentUser,
     @Res({ passthrough: true }) res: Response,
   ) {
-    console.log('verify');
     // @ts-ignore
     return this.authService.authMe(user, res);
   }

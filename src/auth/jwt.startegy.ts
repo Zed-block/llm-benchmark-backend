@@ -20,7 +20,6 @@ const cookieExtractor = (req): ExtractedToken => {
     const authorization = req?.headers?.authorization;
     if (authorization) token = authorization.replace('Bearer ', '');
   }
-  console.log('token: ', token);
   return { token };
 };
 
@@ -45,9 +44,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!user) {
       throw new UnauthorizedException('User not unauthorized');
     }
-
+    
     const { password, ...rest } = user.toObject();
-
 
     return rest;
   }

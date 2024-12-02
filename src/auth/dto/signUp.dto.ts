@@ -23,3 +23,17 @@ export class SignUpDto {
 	@IsNotEmpty()
 	password: string
 }
+
+export class updateUser {
+	@IsString()
+	@IsNotEmpty()
+	firstName: string
+
+	@IsString()
+	@IsNotEmpty()
+	lastName: string
+
+	@IsOptional()
+	@IsPhoneNumber()
+	phone?: string
+}

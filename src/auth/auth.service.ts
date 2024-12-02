@@ -85,22 +85,12 @@ export class AuthService {
     try {
       let user = await this.userService.getUserByEmail(currentUser.email);
 
-      const token = await this.jwtService.signAsync(
-        { userId: user._id },
-        {
-          expiresIn: '365d',
-        },
-      );
-      res
-        .cookie('authorization', `Bearer ${token}`, {
-          httpOnly: true,
-          secure: true,
-          maxAge: Date.now() + 10 * 365 * 24 * 60 * 60,
-          sameSite: 'none',
-        })
-        .json({ ...user.toObject(), token });
+      let { password, ...rest } = user.toObject();
+
+      return rest;
     } catch (err: any) {
-      res.json({ error: true, message: err.message });
+      console.log('err at auth me');
+      throw new BadRequestException(err.message);
     }
   }
 
@@ -119,7 +109,9 @@ export class AuthService {
     try {
       const userExist = await this.userModel.findOne({ email: userObj.email });
 
-      if (userExist) throw new BadRequestException('Email already exist');
+      if (userExist) {
+        throw new BadRequestException('Email already exist');
+      }
 
       const encryptedPassword = (userObj.password = bcrypt.hashSync(
         userObj.password,
@@ -132,15 +124,14 @@ export class AuthService {
       });
 
       this.verifyEmailRequest(
-        `${process.env.FRONTEND_BASE_URL}/verifytoken`,
+        `${process.env.FRONTEND_BASE_URL}/${process.env.TOKEN_VERIFICATION}`,
         user,
       );
 
       res.json(user);
     } catch (err: any) {
       console.log('err', err.message);
-      res.json({ error: true, message: err.message });
-      // throw new BadRequestException({ message: err.message })
+      throw new BadRequestException({ message: err.message });
     }
   }
 
@@ -152,7 +143,6 @@ export class AuthService {
           expiresIn: '30d',
         },
       );
-      console.log('token: ', token);
       const verifyEmailUrl = `${origin}?token=${token}`;
       await this.emailService.verificatoinEmail(
         user?.email,
@@ -261,16 +251,23 @@ export class AuthService {
         },
       );
 
-      const verifyEmailUrl = `${process.env.FRONTEND_BASE_URL}/createpassword?token=${token}`;
+      const verifyEmailUrl = `${process.env.FRONTEND_BASE_URL}/${process.env.CREATE_PASSWORD}?token=${token}`;
 
-      await this.emailService.ForgetPassword(
+      let emailer = await this.emailService.ForgetPassword(
         user?.email,
         user?.firstName,
         verifyEmailUrl,
       );
+
+      console.log('emailer: ', emailer);
+      if (!emailer) {
+        throw new BadRequestException('Error sending mail');
+      }
+
+      return emailer;
     } catch (error) {
       console.log('Error in verifyEmailRequest: ', error);
-      return false;
+      throw new BadRequestException('Error sending mail');
     }
   }
 }

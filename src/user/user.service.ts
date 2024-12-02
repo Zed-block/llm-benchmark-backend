@@ -8,6 +8,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schema/user.schema';
 import * as bcrypt from 'bcryptjs';
+import { SignUpDto, updateUser } from 'src/auth/dto/signUp.dto';
 @Injectable()
 export class UserService {
   constructor(
@@ -248,6 +249,24 @@ export class UserService {
       results['data'] = userData;
 
       return results;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async updateUser(id: string, updateData: updateUser) {
+    try {
+      const updatedUser = await this.userModule.findByIdAndUpdate(
+        id,
+        { $set: updateData },
+        { new: true },
+      );
+
+      if (!updatedUser) {
+        throw new BadRequestException('User not found');
+      }
+
+      return updatedUser;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
