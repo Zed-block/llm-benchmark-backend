@@ -19,24 +19,28 @@ export class EmailService {
   transporter: Transporter;
   constructor() {
     const SMTP_HOST = 'smtp.postmarkapp.com';
-    const SMTP_PORT = 587;
+    const SMTP_PORT = 465;
     const SMTP_USERNAME = 'deba9232-4e71-4720-b872-f996553bae34';
     const SMTP_PASSWORD = 'deba9232-4e71-4720-b872-f996553bae34';
 
-    const host = SMTP_HOST;
-    const port = SMTP_PORT;
-    const user = SMTP_USERNAME;
-    const pass = SMTP_PASSWORD;
-
     this.transporter = nodemailer.createTransport({
-      host,
-      port,
-      auth: { user, pass },
-      debug: true,
+      host: SMTP_HOST, // Postmark SMTP host
+      port: SMTP_PORT,
+      secure: true, // Default SMTP port for Postmark
+      auth: {
+        user: SMTP_USERNAME, // Your Postmark SMTP username
+        pass: SMTP_PASSWORD, // Your Postmark SMTP password
+      },
       headers: {
         'X-PM-Message-Stream': 'outbound',
       },
       priority: 'high',
+      tls: {
+        rejectUnauthorized: false, // Add this to avoid SSL handshake issues
+      },
+      debug: true, // Enable debugging
+      logger: true, // Log all SMTP traffic
+      socketTimeout: 60000,
     });
   }
 
@@ -46,7 +50,7 @@ export class EmailService {
     url: string,
   ): Promise<boolean> {
     try {
-      console.log('mail dsd');
+      console.log('mail dsd: ', url);
       const templatePath = path.join(
         process.cwd(),
         'src',
@@ -69,7 +73,7 @@ export class EmailService {
       const msg = {
         Subject: 'Email Verification for Zedblock',
         to: email,
-        Body: 'Email Verification for Zedblock',
+        Body: renderedHtml,
       };
 
       let mailSent = await this.sendEmail(msg);
@@ -127,28 +131,8 @@ export class EmailService {
       console.log('data: ', data);
       console.log('data: ', process.env.ADMIN_SUPPORT_EMAIL);
 
-      const SMTP_HOST = 'smtp.postmarkapp.com';
-      const SMTP_PORT = 587;
-      const SMTP_USERNAME = 'deba9232-4e71-4720-b872-f996553bae34';
-      const SMTP_PASSWORD = 'deba9232-4e71-4720-b872-f996553bae34';
-  
-      const host = SMTP_HOST;
-      const port = SMTP_PORT;
-      const user = SMTP_USERNAME;
-      const pass = SMTP_PASSWORD;
-
-      const  transporter = nodemailer.createTransport({
-        host,
-        port,
-        auth: { user, pass },
-        debug: true,
-        headers: {
-          "X-PM-Message-Stream": "outbound",
-        },
-        priority: "high",
-      })
-      console.log("check")
-      const res = await transporter.sendMail({
+      console.log('check');
+      const res = await this.transporter.sendMail({
         to: data.to,
         subject: data.Subject,
         html: data.Body,
@@ -157,6 +141,7 @@ export class EmailService {
           'X-PM-Message-Stream': 'outbound',
         },
       });
+      console.log('resL : ', res);
       return true;
     } catch (err) {
       console.log('ere', err);

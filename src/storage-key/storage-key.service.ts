@@ -9,7 +9,7 @@ export class StorageKeyService {
     @InjectModel(Key.name) private readonly keyModel: Model<KeyDocument>,
   ) {}
 
-  async createKey(keyData: Partial<Key>, user): Promise<Key> {
+  async createKey(keyData: Partial<any>, user): Promise<Key> {
     try {
       return await this.keyModel.create({ ...keyData, userId: user._id });
     } catch (error) {
@@ -18,15 +18,25 @@ export class StorageKeyService {
   }
 
   async getKeyByName(user, name): Promise<Key | undefined> {
-    return this.keyModel.findOne({ userId: user._id, name: name });
+    return this.keyModel.findOne({ userId: user._id, provider: name });
   }
 
   async getKeysByUserId(userId: mongoose.Types.ObjectId): Promise<string[]> {
     let allData = await this.keyModel.find({ userId: userId });
-    console.log('allData: ', allData);
-    let names = allData.map((item) => item?.name);
-    console.log('names: ', names);
+    let names = allData.map((item) => item?.provider);
     return names;
+  }
+
+  async getAllModelsByUserId(userId: mongoose.Types.ObjectId): Promise<Key[]> {
+    let allData = await this.keyModel.aggregate([
+      { $match: { userId: userId } },
+      {
+        $unwind: {
+          path: '$models',
+        },
+      },
+    ]);
+    return allData;
   }
 
   async deleteKey(keyId: string): Promise<Key> {

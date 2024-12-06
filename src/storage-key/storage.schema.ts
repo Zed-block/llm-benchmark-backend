@@ -6,15 +6,18 @@ export type KeyDocument = Key & Document;
 @Schema({ timestamps: true })
 export class Key {
   @Prop({ required: true })
-  key: string;
+  provider: string;
 
   @Prop({ required: true })
   userId: mongoose.Types.ObjectId;
 
   @Prop({ required: true })
-  name: string;
+  apiKey: string;
 
   @Prop({ required: true })
+  models: string[];
+
+  @Prop({ required: false })
   version: string;
 }
 

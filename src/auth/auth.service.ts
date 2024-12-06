@@ -85,9 +85,26 @@ export class AuthService {
     try {
       let user = await this.userService.getUserByEmail(currentUser.email);
 
+      const token = await this.jwtService.signAsync(
+        { userId: user._id },
+        {
+          expiresIn: '365d',
+        },
+      );
+
       let { password, ...rest } = user.toObject();
 
-      return rest;
+      // res
+      //   .cookie('authorization', `Bearer ${token}`, {
+      //     httpOnly: true,
+      //     secure: true,
+      //     maxAge: 10 * 365 * 24 * 60 * 60 * 1000, // Ensure maxAge is in milliseconds
+      //     sameSite: 'none',
+      //   })
+      //   .json({ ...rest, token });
+
+      // Explicitly return after sending the response
+      return rest
     } catch (err: any) {
       console.log('err at auth me');
       throw new BadRequestException(err.message);
@@ -173,10 +190,9 @@ export class AuthService {
         throw new BadRequestException('User Does not exist');
       }
 
-      const emailVerified = (user.isEmailVerified = true);
       user = await this.userModel.findOneAndUpdate(
         { email: user.email },
-        { $set: { isEmailVerified: emailVerified } },
+        { $set: { isEmailVerified: true } },
       );
       return user;
     } catch (err) {

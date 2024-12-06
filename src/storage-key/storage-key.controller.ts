@@ -38,6 +38,12 @@ export class StorageKeyController {
   }
 
   @UseGuards(AuthGuard())
+  @Get('getAllModel')
+  async getAllModelsByUserId(@CurrentUser() user: CuurentUser): Promise<Key[]> {
+    return await this.keyService.getAllModelsByUserId(user._id);
+  }
+
+  @UseGuards(AuthGuard())
   @Get('getAllKeys')
   async getKeysByUserId(@CurrentUser() user: CuurentUser): Promise<string[]> {
     return await this.keyService.getKeysByUserId(user._id);
@@ -51,6 +57,7 @@ export class StorageKeyController {
     return this.keyService.updateKey(keyId, updateData);
   }
 
+  @UseGuards(AuthGuard())
   @Delete(':keyId')
   async deleteKey(@Param('keyId') keyId: string): Promise<Key> {
     return this.keyService.deleteKey(keyId);

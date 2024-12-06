@@ -52,7 +52,7 @@ export class AuthController {
     return await this.authService.register(userObj, res);
   }
 
-  @Put('/account/verification/:token')
+  @Get('/account/verification/:token')
   async verifyEmail(
     @Param('token') token: string,
     // @Body() loginDetail: Login_Details,
@@ -83,8 +83,7 @@ export class AuthController {
     @CurrentUser() user: CuurentUser,
     @Res({ passthrough: true }) res: Response,
   ) {
-    // @ts-ignore
-    return this.authService.authMe(user, res);
+    return await this.authService.authMe(user, res);
   }
 
   
