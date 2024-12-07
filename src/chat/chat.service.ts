@@ -21,7 +21,10 @@ export class ChatService {
     return newChat.save();
   }
 
-  async ask(messageData: askQuestion, user: CuurentUser): Promise<askQuestionRes> {
+  async ask(
+    messageData: askQuestion,
+    user: CuurentUser,
+  ): Promise<askQuestionRes> {
     if (!messageData?.topicId) {
       let topic = await this.topicService.createTopic({
         type: messageData?.type,
@@ -40,6 +43,151 @@ export class ChatService {
     const aiResponse = await this.aiService.getResponse(messageData, user);
 
     return aiResponse;
+  }
+
+  async getSingleMsg(topicId: string, page: number, lastMessageId?: string) {
+    try {
+      let topic = new mongoose.Types.ObjectId(topicId);
+      let limit = 10;
+      let lastMessageIndex = 0;
+
+      const messages = await this.messageModel.aggregate([
+        {
+          $match: {
+            topicId: topic,
+          },
+        },
+        {
+          $sort: { createdAt: -1 },
+        },
+      ]);
+
+      if (lastMessageId) {
+        let index = messages.findIndex(
+          (message) => String(message.messageId) === String(lastMessageId),
+        );
+        lastMessageIndex = index > 0 ? index + 1 : 0;
+      }
+
+      console.log('lastMessageIndex: ', lastMessageIndex);
+
+      const paginatedMessages = messages.slice(
+        lastMessageIndex,
+        lastMessageIndex + limit,
+      );
+
+      const nextPageAvailable = lastMessageIndex + limit < messages.length;
+
+      return {
+        messages: paginatedMessages,
+        nextPageAvailable,
+        page,
+      };
+    } catch (err) {
+      console.log('ERR', err.Message);
+    }
+  }
+
+  async getCompare(topicId: string, lastMessageId?: string, model?: string) {
+    try {
+      let topic = new mongoose.Types.ObjectId(topicId);
+      let limit = 20;
+
+      // Initialize the aggregation pipeline
+      const pipeline: any[] = [
+        {
+          $match: {
+            topicId: topic,
+          },
+        },
+        {
+          $sort: { createdAt: -1 }, // Sort messages by createdAt in descending order
+        },
+      ];
+
+      // Add the optional match for model if provided
+      if (model) {
+        pipeline.push({
+          $match: {
+            selectedModel: model, // Match the model if it's provided
+          },
+        });
+      }
+
+      if (!model) {
+        // Add the groupBy to selectedModel to group messages
+        pipeline.push({
+          $group: {
+            _id: '$selectedModel', // Group by selectedModel
+            messages: {
+              $push: {
+                messageId: '$messageId',
+                content: '$content',
+                role: '$role',
+                model: '$model',
+                provider: '$provider',
+                createdAt: '$createdAt',
+                contentType: '$contentType',
+                // Add other necessary fields here
+              },
+            },
+            lastIndex: { $last: '$createdAt' }, // Capture the last index based on createdAt
+          },
+        });
+      }
+
+      // Add limit to get only the specified number of messages
+      pipeline.push({ $limit: limit + 1 }); // Fetch one extra to check for next page
+
+      // Execute the aggregation
+      const results = await this.messageModel.aggregate(pipeline).exec();
+
+      // Check if there are any results for the selected model
+      if (model && results.length > 0) {
+        const lastMessageIndex = results.findIndex(
+          (msg) => msg.messageId === lastMessageId,
+        );
+        const nextPageAvailable = results.length > limit;
+
+        // Return the messages and last index for the selected model
+        return {
+          messages: results.slice(
+            lastMessageIndex + 1,
+            lastMessageIndex + 1 + limit,
+          ),
+          nextPageAvailable,
+        };
+      }
+
+      // If no model is specified or model doesn't exist, return grouped messages
+      const nextPageAvailable = results.length > limit;
+
+      return {
+        messages: results.slice(0, limit),
+        nextPageAvailable,
+      };
+    } catch (err) {
+      console.log('ERR', err.message);
+      throw new Error('Error while fetching messages');
+    }
+  }
+  async getMessage(
+    type: string,
+    page: number,
+    topicId: string,
+    lastMessageId?: string,
+  ) {
+    try {
+      console.log('type,', type);
+      if (type === 'chat' || type === 'llmrouter') {
+        return await this.getSingleMsg(topicId, page, lastMessageId);
+      }
+      if (type === 'compare') {
+        return await this.getCompare(topicId, lastMessageId);
+      }
+    } catch (err) {
+      console.log('ERR', err.Message);
+    }
   }
 
   // Delete a chat message by ID

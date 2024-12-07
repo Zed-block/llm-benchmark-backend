@@ -77,7 +77,7 @@ export class AuthService {
         })
         .json({ ...rest, token });
     } catch (err: any) {
-      res.json({ error: true, message: err.message });
+      throw new BadRequestException(err?.message)
     }
   }
 

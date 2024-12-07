@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Topic, TopicDocument } from './schema/topic.schema';
 import mongoose, { Model } from 'mongoose';
-import { topicType } from './dto/addNewMessage';
+import { createNewMsgTopic, topicType } from './dto/addNewMessage';
 
 @Injectable()
 export class TopicService {
@@ -10,7 +10,7 @@ export class TopicService {
     @InjectModel(Topic.name) private topicModel: Model<TopicDocument>,
   ) {}
 
-  async createTopic(createTopicDto: Topic): Promise<topicType> {
+  async createTopic(createTopicDto: createNewMsgTopic): Promise<topicType> {
     try {
       console.log('createTopicDto: ', createTopicDto);
       const createdTopic = new this.topicModel(createTopicDto);

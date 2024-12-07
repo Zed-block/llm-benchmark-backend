@@ -20,8 +20,11 @@ export class Message {
   @Prop({ required: false })
   queryId: string;
 
-  @Prop({ required: true, enum: ['chat', 'llmrouter'] })
+  @Prop({ required: true, enum: ['chat', 'llmrouter', 'compare'] })
   type: string;
+
+  @Prop({ required: true, enum: ['question', 'answer'] })
+  contentType: string;
 
   @Prop({ required: false })
   model1: string;
@@ -34,9 +37,6 @@ export class Message {
 
   @Prop({ required: false })
   provider2: string;
-
-  @Prop({ required: true })
-  contentType: string;
 
   @Prop({ required: false })
   instruction: string;
