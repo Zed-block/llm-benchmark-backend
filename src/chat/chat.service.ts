@@ -69,18 +69,17 @@ export class ChatService {
         lastMessageIndex = index > 0 ? index + 1 : 0;
       }
 
-      console.log('lastMessageIndex: ', lastMessageIndex);
 
       const paginatedMessages = messages.slice(
         lastMessageIndex,
         lastMessageIndex + limit,
       );
 
-      const nextPageAvailable = lastMessageIndex + limit < messages.length;
+      const next = lastMessageIndex + limit < messages.length;
 
       return {
         messages: paginatedMessages,
-        nextPageAvailable,
+        next,
         page,
       };
     } catch (err) {
