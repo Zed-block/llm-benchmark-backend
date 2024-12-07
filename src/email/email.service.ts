@@ -8,40 +8,32 @@ import { promises as fsPromises } from 'fs';
 import { EmailDTO, WaitingUsers } from './types';
 let ObjectId = require('mongodb').ObjectId;
 
-const auth = new google.auth.OAuth2({
-  clientId: process.env.EMAIL_CLIENT_ID,
-  clientSecret: process.env.EMAIL_CLIENT_SECRET,
-  redirectUri: process.env.EMAIL_REDIRECT_URL,
-});
+
 
 @Injectable()
 export class EmailService {
-  transporter: Transporter;
+  transporter: Transporter
   constructor() {
-    const SMTP_HOST = 'smtp.postmarkapp.com';
-    const SMTP_PORT = 465;
-    const SMTP_USERNAME = 'deba9232-4e71-4720-b872-f996553bae34';
-    const SMTP_PASSWORD = 'deba9232-4e71-4720-b872-f996553bae34';
+    const SMTP_HOST = "smtp.postmarkapp.com"
+    const SMTP_PORT = 587
+    const SMTP_USERNAME = "deba9232-4e71-4720-b872-f996553bae34"
+    const SMTP_PASSWORD = "deba9232-4e71-4720-b872-f996553bae34"
+
+    const host = SMTP_HOST
+    const port = SMTP_PORT
+    const user = SMTP_USERNAME
+    const pass = SMTP_PASSWORD
 
     this.transporter = nodemailer.createTransport({
-      host: SMTP_HOST, // Postmark SMTP host
-      port: SMTP_PORT,
-      secure: true, // Default SMTP port for Postmark
-      auth: {
-        user: SMTP_USERNAME, // Your Postmark SMTP username
-        pass: SMTP_PASSWORD, // Your Postmark SMTP password
-      },
+      host,
+      port,
+      auth: { user, pass },
+      debug: true,
       headers: {
-        'X-PM-Message-Stream': 'outbound',
+        "X-PM-Message-Stream": "outbound",
       },
-      priority: 'high',
-      tls: {
-        rejectUnauthorized: false, // Add this to avoid SSL handshake issues
-      },
-      debug: true, // Enable debugging
-      logger: true, // Log all SMTP traffic
-      socketTimeout: 60000,
-    });
+      priority: "high",
+    })
   }
 
   async verificatoinEmail(
@@ -78,7 +70,7 @@ export class EmailService {
 
       let mailSent = await this.sendEmail(msg);
 
-      return mailSent;
+      return;
     } catch (error) {
       console.log('error', error.message);
       return false;
@@ -119,7 +111,7 @@ export class EmailService {
 
       let mailSent = await this.sendEmail(msg);
 
-      return mailSent;
+      return;
     } catch (error) {
       console.log('error', error.message);
       return false;
@@ -128,24 +120,18 @@ export class EmailService {
 
   async sendEmail(data: EmailDTO) {
     try {
-      console.log('data: ', data);
-      console.log('data: ', process.env.ADMIN_SUPPORT_EMAIL);
-
-      console.log('check');
       const res = await this.transporter.sendMail({
         to: data.to,
         subject: data.Subject,
         html: data.Body,
         from: `<${process.env.ADMIN_SUPPORT_EMAIL}>`,
         headers: {
-          'X-PM-Message-Stream': 'outbound',
+          "X-PM-Message-Stream": "outbound",
         },
-      });
-      console.log('resL : ', res);
-      return true;
+      })
+
     } catch (err) {
-      console.log('ere', err);
-      return false;
+      console.log("ere", err)
     }
   }
 }

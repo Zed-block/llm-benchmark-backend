@@ -31,7 +31,7 @@ export class AuthService {
     private userService: UserService,
     private jwtService: JwtService,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
-  ) {}
+  ) { }
 
   async resendtokenEMail(email: string) {
     try {
@@ -58,26 +58,30 @@ export class AuthService {
 
       if (!user.isEmailVerified) {
         throw new BadRequestException('Email is not verified');
+        // res.sendStatus(403).send('Email is not verified')
+      } else {
+        const token = await this.jwtService.signAsync(
+          { userId: user._id },
+          {
+            expiresIn: '365d',
+          },
+        );
+
+        let { password, ...rest } = user.toObject();
+        res
+          .cookie('authorization', `Bearer ${token}`, {
+            httpOnly: true,
+            secure: true,
+            maxAge: Date.now() + 10 * 365 * 24 * 60 * 60,
+            sameSite: 'none',
+          })
+          .json({ ...rest, token });
       }
 
-      const token = await this.jwtService.signAsync(
-        { userId: user._id },
-        {
-          expiresIn: '365d',
-        },
-      );
 
-      let { password, ...rest } = user.toObject();
-      res
-        .cookie('authorization', `Bearer ${token}`, {
-          httpOnly: true,
-          secure: true,
-          maxAge: Date.now() + 10 * 365 * 24 * 60 * 60,
-          sameSite: 'none',
-        })
-        .json({ ...rest, token });
     } catch (err: any) {
-      res.json({ error: true, message: err.message });
+      throw new BadRequestException(err.message);
+      // res.json({ error: true, message: err.message });
     }
   }
 
@@ -228,7 +232,7 @@ export class AuthService {
       );
       console.log('user: ', user);
       return 'password updated';
-    } catch (error) {}
+    } catch (error) { }
   }
 
   async verifyPassword(username: string, password: string) {
