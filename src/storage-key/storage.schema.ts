@@ -19,6 +19,9 @@ export class Key {
 
   @Prop({ required: false })
   version: string;
+
+  @Prop({ required: false, default: 0.1 })
+  temperature: number;
 }
 
 export const KeySchema = SchemaFactory.createForClass(Key);

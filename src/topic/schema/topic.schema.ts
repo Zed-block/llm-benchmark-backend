@@ -5,7 +5,7 @@ export type TopicDocument = Topic & Document;
 
 @Schema({ timestamps: true })
 export class Topic {
-  @Prop({ required: true, enum: ['chat', 'llmrouter'] })
+  @Prop({ required: true, enum: ['chat', 'llmrouter', 'compare'] })
   type: string;
 
   @Prop({ required: true })

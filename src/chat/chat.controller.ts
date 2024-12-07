@@ -8,6 +8,8 @@ import {
   Param,
   BadGatewayException,
   UseGuards,
+  Query,
+  Get,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { Message } from './schema/message.schema';
@@ -39,6 +41,28 @@ export class ChatController {
   ): Promise<askQuestionRes> {
     try {
       return await this.chatService.ask(chatData, user);
+    } catch (error) {
+      throw new BadGatewayException(error?.message);
+    }
+  }
+
+  // ask a new chat message
+  @UseGuards(AuthGuard())
+  @Get('getMessages')
+  async getMessages(
+    @Query('page') page: number,
+    @Query('type') type: string,
+    @Query('topicId') topicId: string,
+    @Query('lastMessageId') lastMessageId: string,
+    @CurrentUser() user: CuurentUser,
+  ) {
+    try {
+      return await this.chatService.getMessage(
+        type,
+        page,
+        topicId,
+        lastMessageId,
+      );
     } catch (error) {
       throw new BadGatewayException(error?.message);
     }

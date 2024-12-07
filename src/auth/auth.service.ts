@@ -81,7 +81,6 @@ export class AuthService {
 
     } catch (err: any) {
       throw new BadRequestException(err.message);
-      // res.json({ error: true, message: err.message });
     }
   }
 

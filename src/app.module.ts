@@ -16,6 +16,7 @@ import { LlmRouterController } from './llm-router/llm-router.controller';
 import { LlmRouterService } from './llm-router/llm-router.service';
 import { LlmRouterModule } from './llm-router/llm-router.module';
 import { Message, MessageSchema } from './chat/schema/message.schema';
+import { CompareModule } from './compare/compare.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { Message, MessageSchema } from './chat/schema/message.schema';
     TopicModule,
     LlmRouterModule,
     MongooseModule.forFeature([{ name: Message.name, schema: MessageSchema }]),
+    CompareModule,
   ],
   controllers: [AppController, LlmRouterController],
   providers: [JwtStrategy,AppService, LlmRouterService],
