@@ -149,8 +149,8 @@ export class CompareService {
         // If no model is specified or model doesn't exist, return grouped messages
         const nextPageAvailable = results[0]?.messages.length > limit;
 
-        let message1 = results[0]?.messages.reverse();
-        let message2 = results[1]?.messages.reverse();
+        let message1 = results[0]?.messages;
+        let message2 = results[1]?.messages;
 
         return {
           page,
