@@ -31,7 +31,7 @@ export class AuthService {
     private userService: UserService,
     private jwtService: JwtService,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
-  ) { }
+  ) {}
 
   async resendtokenEMail(email: string) {
     try {
@@ -67,7 +67,7 @@ export class AuthService {
           },
         );
 
-        let { password, ...rest } = user.toObject();
+        let { password, ...rest } = await user.toObject();
         res
           .cookie('authorization', `Bearer ${token}`, {
             httpOnly: true,
@@ -77,11 +77,13 @@ export class AuthService {
           })
           .json({ ...rest, token });
       }
-
-
     } catch (err: any) {
       throw new BadRequestException(err.message);
     }
+  }
+
+  async getLoginToken (){
+    
   }
 
   async authMe(currentUser: CuurentUser, res) {
@@ -107,7 +109,7 @@ export class AuthService {
       //   .json({ ...rest, token });
 
       // Explicitly return after sending the response
-      return rest
+      return rest;
     } catch (err: any) {
       console.log('err at auth me');
       throw new BadRequestException(err.message);
@@ -196,8 +198,26 @@ export class AuthService {
       user = await this.userModel.findOneAndUpdate(
         { email: user.email },
         { $set: { isEmailVerified: true } },
+        { new: true, upsert: true },
       );
-      return user;
+
+      const token = await this.jwtService.signAsync(
+        { userId: user._id },
+        {
+          expiresIn: '365d',
+        },
+      );
+
+      let { password, ...rest } = user.toObject();
+
+      res
+        .cookie('authorization', `Bearer ${token}`, {
+          httpOnly: true,
+          secure: true,
+          maxAge: Date.now() + 10 * 365 * 24 * 60 * 60,
+          sameSite: 'none',
+        })
+        .json({ ...rest, token });
     } catch (err) {
       throw new BadRequestException(
         'Token is Invalid Or Expired Please try again',
@@ -231,7 +251,7 @@ export class AuthService {
       );
       console.log('user: ', user);
       return 'password updated';
-    } catch (error) { }
+    } catch (error) {}
   }
 
   async verifyPassword(username: string, password: string) {
