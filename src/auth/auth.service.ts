@@ -82,9 +82,7 @@ export class AuthService {
     }
   }
 
-  async getLoginToken (){
-    
-  }
+  async getLoginToken() {}
 
   async authMe(currentUser: CuurentUser, res) {
     try {
@@ -251,7 +249,9 @@ export class AuthService {
       );
       console.log('user: ', user);
       return 'password updated';
-    } catch (error) {}
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 
   async verifyPassword(username: string, password: string) {
