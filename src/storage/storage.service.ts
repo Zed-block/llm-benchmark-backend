@@ -1,6 +1,5 @@
 import { Storage } from '@google-cloud/storage';
 import { Injectable } from '@nestjs/common';
-import * as StorageKey from '../storage/GCPkey.json';
 
 @Injectable()
 export class StorageService {
@@ -8,10 +7,10 @@ export class StorageService {
 
   constructor() {
     this.storage = new Storage({
-      projectId: StorageKey?.project_id,
+      projectId: process.env.PROJECT_ID,
       credentials: {
-        client_email: StorageKey?.client_email,
-        private_key: StorageKey?.private_key,
+        client_email: process.env.CLIENT_EMAIL,
+        private_key: process.env.PRIVATE_KEY,
       },
     });
   }
