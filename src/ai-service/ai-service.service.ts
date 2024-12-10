@@ -12,6 +12,8 @@ import {
 } from './dto/addNewMessageForLlmRouter';
 import { chatReplyForLlmRouter } from './dto/replyForLlmRouter';
 import { InjectModel } from '@nestjs/mongoose';
+import axios from 'axios';
+import { metricsRun } from 'src/metrics/dto/ask';
 
 @Injectable()
 export class AiServiceService {
@@ -30,13 +32,47 @@ export class AiServiceService {
     user: CuurentUser,
   ): Promise<chatReply> {
     return new Promise(async (resolve) => {
+      let body = {
+        system_prompt: messageData?.instruction,
+        user_query: messageData?.content,
+        model_name: messageData?.model,
+        model_provider: messageData?.provider,
+        user_id: String(user?._id),
+        // user_id: '674b0e9a79225f671d038826',
+      };
+
+      let response = 'hi its res';
+      try {
+        await axios
+          .post(
+            `${process.env.AGENT_BASE_URL}/${process.env.CHAT_END_POINT}`,
+            body, // Pass the body object here
+            {
+              headers: {
+                'Content-Type': 'application/json', // Add headers if needed
+              },
+            },
+          )
+          .then((res) => {
+            let apiRes = res?.data;
+            if (apiRes) {
+              response = apiRes;
+            }
+          })
+          .catch((err) => {
+            // console.log('err at agent', err);
+          });
+      } catch (err) {
+        console.log('err at agent', err.message);
+      }
+
       const message = await this.createChat({
-        content: 'hi its res',
+        content: response,
         messageId: uuidv4(),
         instruction: messageData?.instruction,
-        model: messageData.selectedModel,
+        model: messageData.model,
         role: 'assistant',
-        selectedModel: messageData?.selectedModel,
+        provider: messageData?.provider,
         temperature: messageData?.temperature,
         userId: user?._id,
         type: messageData?.type,
@@ -44,9 +80,7 @@ export class AiServiceService {
         queryId: messageData?.messageId,
         topicId: new mongoose.Types.ObjectId(messageData?.topicId),
       });
-      setTimeout(() => {
-        resolve(message); // Delay for 2 seconds
-      }, 2000);
+      resolve(message);
     });
   }
 
@@ -81,7 +115,7 @@ export class AiServiceService {
       const message = await this.createChat({
         content: `hi its res ${i}`,
         messageId: uuidv4(),
-        model: messageData.selectedModel,
+        model: messageData.model,
         role: 'assistant',
         userId: user?._id,
         type: messageData?.type,
@@ -89,10 +123,42 @@ export class AiServiceService {
         queryId: messageData?.messageId,
         topicId: new mongoose.Types.ObjectId(messageData?.topicId),
         instruction: messageData?.instruction,
+        compareId:messageData?.compareId
       });
+
       setTimeout(() => {
         resolve(message); // Delay for 2 seconds
       }, 2000);
     });
+  }
+
+  async getResponseForMetrics(
+    messageData: metricsRun,
+    user: CuurentUser,
+  ): Promise<any> {
+    try {
+      let body = {
+        ...messageData,
+        user_id: String(user?._id),
+      };
+      return await axios
+        .post(
+          `${process.env.AGENT_BASE_URL}/${process.env.CUSTOM_METRICE_END_POINT}`,
+          body, // Pass the body object here
+          {
+            headers: {
+              'Content-Type': 'application/json', // Add headers if needed
+            },
+          },
+        )
+        .then((res) => {
+          return res?.data;
+        })
+        .catch((err) => {
+          return;
+        });
+    } catch (err) {
+      return;
+    }
   }
 }

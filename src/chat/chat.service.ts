@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadGatewayException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { Message, MessageDocument } from './schema/message.schema';
@@ -25,30 +25,34 @@ export class ChatService {
     messageData: askQuestion,
     user: CuurentUser,
   ): Promise<askQuestionRes> {
-    if (!messageData?.topicId) {
-      let topic = await this.topicService.createTopic({
-        type: messageData?.type,
-        userId: user?._id,
+    try {
+      if (!messageData?.topicId) {
+        let topic = await this.topicService.createTopic({
+          type: messageData?.type,
+          userId: user?._id,
+        });
+        messageData.topicId = String(topic._id);
+      }
+      // Step 1: Save the message to the database
+      await this.createChat({
+        ...messageData,
+        userId: user._id,
+        topicId: new mongoose.Types.ObjectId(messageData?.topicId),
       });
-      messageData.topicId = String(topic._id);
+
+      // Step 2: Call the AI service for a delayed response
+      const aiResponse = await this.aiService.getResponse(messageData, user);
+
+      return aiResponse;
+    } catch (err) {
+      throw new BadGatewayException(err.message);
     }
-    // Step 1: Save the message to the database
-    await this.createChat({
-      ...messageData,
-      userId: user._id,
-      topicId: new mongoose.Types.ObjectId(messageData?.topicId),
-    });
-
-    // Step 2: Call the AI service for a delayed response
-    const aiResponse = await this.aiService.getResponse(messageData, user);
-
-    return aiResponse;
   }
 
   async getSingleMsg(topicId: string, page: number, lastMessageId?: string) {
     try {
       let topic = new mongoose.Types.ObjectId(topicId);
-      let limit = 10;
+      let limit = 30;
       let lastMessageIndex = 0;
 
       const messages = await this.messageModel.aggregate([
@@ -69,7 +73,6 @@ export class ChatService {
         lastMessageIndex = index > 0 ? index + 1 : 0;
       }
 
-
       const paginatedMessages = messages.slice(
         lastMessageIndex,
         lastMessageIndex + limit,
@@ -78,7 +81,7 @@ export class ChatService {
       const next = lastMessageIndex + limit < messages.length;
 
       return {
-        messages: paginatedMessages,
+        messages: paginatedMessages.reverse(),
         next,
         page,
       };
@@ -177,7 +180,6 @@ export class ChatService {
     lastMessageId?: string,
   ) {
     try {
-      console.log('type,', type);
       if (type === 'chat' || type === 'llmrouter') {
         return await this.getSingleMsg(topicId, page, lastMessageId);
       }

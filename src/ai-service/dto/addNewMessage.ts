@@ -6,7 +6,7 @@ export class chatReply {
   instruction: string;
   model: string;
   role: string;
-  selectedModel: string;
+  provider: string;
   temperature: number;
   userId: mongoose.Types.ObjectId;
   type: string;

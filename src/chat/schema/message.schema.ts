@@ -27,6 +27,9 @@ export class Message {
   contentType: string;
 
   @Prop({ required: false })
+  provider: string;
+
+  @Prop({ required: false })
   model1: string;
 
   @Prop({ required: false })
@@ -42,9 +45,6 @@ export class Message {
   instruction: string;
 
   @Prop({ required: false })
-  selectedModel: string;
-
-  @Prop({ required: false })
   temperature: number;
 
   @Prop({ required: true })
@@ -52,6 +52,9 @@ export class Message {
 
   @Prop({ required: true })
   topicId: mongoose.Types.ObjectId;
+
+  @Prop({ required: false })
+  compareId: mongoose.Types.ObjectId;
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);

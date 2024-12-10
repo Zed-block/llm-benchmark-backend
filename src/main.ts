@@ -25,7 +25,6 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe({ skipMissingProperties: false }));
 
-  // @ts-ignore
   app.use(compression());
   app.use(cookieParser());
   app.use(bodyParser.json({ limit: '150mb' }));

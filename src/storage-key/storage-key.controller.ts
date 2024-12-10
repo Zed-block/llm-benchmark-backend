@@ -53,7 +53,7 @@ export class StorageKeyController {
   async updateKey(
     @Param('keyId') keyId: string,
     @Body() updateData: Partial<Key>,
-  ): Promise<Key> {
+  ): Promise<any> {
     return this.keyService.updateKey(keyId, updateData);
   }
 

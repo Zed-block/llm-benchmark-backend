@@ -39,8 +39,11 @@ export class StorageKeyService {
     return allData;
   }
 
-  async deleteKey(keyId: string): Promise<Key> {
-    return this.keyModel.findByIdAndDelete(keyId);
+  async deleteKey(keyId: string): Promise<any> {
+    console.log('key', keyId);
+    return this.keyModel.findByIdAndDelete(
+      new mongoose.Types.ObjectId(String(keyId)),
+    );
   }
 
   async updateKey(keyId: string, updateData: Partial<Key>): Promise<Key> {

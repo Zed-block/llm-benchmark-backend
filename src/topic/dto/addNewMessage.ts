@@ -9,4 +9,8 @@ export class topicType {
 export class createNewMsgTopic {
   type: string;
   userId: mongoose.Types.ObjectId;
+  model1?: string;
+  model2?: string;
+  provider1?: string;
+  provider2?: string;
 }

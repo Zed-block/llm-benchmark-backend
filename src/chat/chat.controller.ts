@@ -39,11 +39,8 @@ export class ChatController {
     @Body() chatData: askQuestion,
     @CurrentUser() user: CuurentUser,
   ): Promise<askQuestionRes> {
-    try {
-      return await this.chatService.ask(chatData, user);
-    } catch (error) {
-      throw new BadGatewayException(error?.message);
-    }
+    return await this.chatService.ask(chatData, user);
+
   }
 
   // ask a new chat message

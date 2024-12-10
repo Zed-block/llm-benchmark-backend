@@ -21,6 +21,14 @@ export class TopicService {
     }
   }
 
+  async getTopic(id: mongoose.Types.ObjectId): Promise<topicType> {
+    try {
+      return await this.topicModel.findById(id);
+    } catch (err) {
+      console.log('err', err.message);
+    }
+  }
+
   // Delete a topic by its ID
   async deleteTopic(
     id: mongoose.Types.ObjectId,

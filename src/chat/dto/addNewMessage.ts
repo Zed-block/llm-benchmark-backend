@@ -7,7 +7,8 @@ export class askQuestion {
   type: string;
   contentType: string;
   instruction: string;
-  selectedModel: string;
+  provider: string;
+  model: string;
   temperature: number;
   topicId?: string;
 }
@@ -19,7 +20,8 @@ export class askQuestionRes {
   type: string;
   contentType: string;
   instruction: string;
-  selectedModel: string;
+  model: string;
+  provider: string;
   temperature: number;
   topicId: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;

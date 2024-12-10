@@ -8,8 +8,9 @@ export class compareAsk {
     type: string;
     contentType: string;
     instruction: string;
-    selectedModel: string;
+    model: string;
     topicId?: string;
+    compareId?: string;
   };
   message2: {
     messageId: string;
@@ -18,8 +19,9 @@ export class compareAsk {
     type: string;
     contentType: string;
     instruction: string;
-    selectedModel: string;
+    model: string;
     topicId?: string;
+    compareId?: string;
   };
 }
 
