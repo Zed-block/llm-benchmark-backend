@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadGatewayException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { AiServiceService } from 'src/ai-service/ai-service.service';
@@ -55,6 +55,7 @@ export class LlmRouterService {
       return aiResponse;
     } catch (err: any) {
       console.log('err', err.message);
+      throw new BadGatewayException(err);
     }
   }
 
@@ -94,7 +95,7 @@ export class LlmRouterService {
       const next = lastMessageIndex + limit < messages.length;
 
       return {
-        messages: paginatedMessages,
+        messages: messages,
         next,
         page,
         topic: topicData,

@@ -27,10 +27,13 @@ export class ChatService {
   ): Promise<askQuestionRes> {
     try {
       if (!messageData?.topicId) {
-        let topic = await this.topicService.createTopic({
+        let topicBody = {
           type: messageData?.type,
           userId: user?._id,
-        });
+          model1: messageData?.model,
+          provider1: messageData?.provider,
+        };
+        let topic = await this.topicService.createTopic(topicBody);
         messageData.topicId = String(topic._id);
       }
       // Step 1: Save the message to the database
@@ -45,6 +48,7 @@ export class ChatService {
 
       return aiResponse;
     } catch (err) {
+      console.group('error at ask', err);
       throw new BadGatewayException(err.message);
     }
   }
@@ -54,6 +58,7 @@ export class ChatService {
       let topic = new mongoose.Types.ObjectId(topicId);
       let limit = 30;
       let lastMessageIndex = 0;
+      const topicData = await this.topicService.getTopic(topic);
 
       const messages = await this.messageModel.aggregate([
         {
@@ -81,96 +86,14 @@ export class ChatService {
       const next = lastMessageIndex + limit < messages.length;
 
       return {
-        messages: paginatedMessages.reverse(),
+        messages: messages.reverse(),
         next,
         page,
+        topic: topicData,
       };
     } catch (err) {
       console.log('ERR', err.Message);
-    }
-  }
-
-  async getCompare(topicId: string, lastMessageId?: string, model?: string) {
-    try {
-      let topic = new mongoose.Types.ObjectId(topicId);
-      let limit = 20;
-
-      // Initialize the aggregation pipeline
-      const pipeline: any[] = [
-        {
-          $match: {
-            topicId: topic,
-          },
-        },
-        {
-          $sort: { createdAt: -1 }, // Sort messages by createdAt in descending order
-        },
-      ];
-
-      // Add the optional match for model if provided
-      if (model) {
-        pipeline.push({
-          $match: {
-            selectedModel: model, // Match the model if it's provided
-          },
-        });
-      }
-
-      if (!model) {
-        // Add the groupBy to selectedModel to group messages
-        pipeline.push({
-          $group: {
-            _id: '$selectedModel', // Group by selectedModel
-            messages: {
-              $push: {
-                messageId: '$messageId',
-                content: '$content',
-                role: '$role',
-                model: '$model',
-                provider: '$provider',
-                createdAt: '$createdAt',
-                contentType: '$contentType',
-                // Add other necessary fields here
-              },
-            },
-            lastIndex: { $last: '$createdAt' }, // Capture the last index based on createdAt
-          },
-        });
-      }
-
-      // Add limit to get only the specified number of messages
-      pipeline.push({ $limit: limit + 1 }); // Fetch one extra to check for next page
-
-      // Execute the aggregation
-      const results = await this.messageModel.aggregate(pipeline).exec();
-
-      // Check if there are any results for the selected model
-      if (model && results.length > 0) {
-        const lastMessageIndex = results.findIndex(
-          (msg) => msg.messageId === lastMessageId,
-        );
-        const nextPageAvailable = results.length > limit;
-
-        // Return the messages and last index for the selected model
-        return {
-          messages: results.slice(
-            lastMessageIndex + 1,
-            lastMessageIndex + 1 + limit,
-          ),
-          nextPageAvailable,
-        };
-      }
-
-      // If no model is specified or model doesn't exist, return grouped messages
-      const nextPageAvailable = results.length > limit;
-
-      return {
-        messages: results.slice(0, limit),
-        nextPageAvailable,
-      };
-    } catch (err) {
-      console.log('ERR', err.message);
-      throw new Error('Error while fetching messages');
+      throw new BadGatewayException(err.message);
     }
   }
   async getMessage(
@@ -180,12 +103,7 @@ export class ChatService {
     lastMessageId?: string,
   ) {
     try {
-      if (type === 'chat' || type === 'llmrouter') {
-        return await this.getSingleMsg(topicId, page, lastMessageId);
-      }
-      if (type === 'compare') {
-        return await this.getCompare(topicId, lastMessageId);
-      }
+      return await this.getSingleMsg(topicId, page, lastMessageId);
     } catch (err) {
       console.log('ERR', err.Message);
     }

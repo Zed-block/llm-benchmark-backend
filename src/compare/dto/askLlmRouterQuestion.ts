@@ -9,6 +9,7 @@ export class compareAsk {
     contentType: string;
     instruction: string;
     model: string;
+    provider: string;
     topicId?: string;
     compareId?: string;
   };
@@ -20,9 +21,23 @@ export class compareAsk {
     contentType: string;
     instruction: string;
     model: string;
+    provider: string;
     topicId?: string;
     compareId?: string;
   };
+}
+
+export class singleCompare {
+  messageId: string;
+  content: string;
+  role: string;
+  type: string;
+  contentType: string;
+  instruction: string;
+  model: string;
+  provider: string;
+  topicId?: string;
+  compareId: string;
 }
 
 export class compareRes {

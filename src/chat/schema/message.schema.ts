@@ -55,6 +55,24 @@ export class Message {
 
   @Prop({ required: false })
   compareId: mongoose.Types.ObjectId;
+
+  @Prop({ required: false })
+  totalToken: number;
+
+  @Prop({ required: false })
+  inputToken: number;
+
+  @Prop({ required: false })
+  outputToken: number;
+
+  @Prop({ required: false })
+  totalCost: number;
+
+  @Prop({ required: false })
+  inputCost: number;
+
+  @Prop({ required: false })
+  outputCost: number;
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);

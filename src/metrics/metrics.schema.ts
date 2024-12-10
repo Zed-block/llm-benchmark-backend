@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
+import { metadataType } from 'src/ai-service/dto/metricChat';
 
 export type MetricsDocument = Metrics & Document;
 
@@ -16,11 +17,11 @@ export type PairWiseMetrice = {
 
 @Schema({ timestamps: true })
 export class Metrics {
-  @Prop({ required: true })
-  judge_model: string;
+  @Prop({ required: false })
+  response_model_name: string;
 
-  @Prop({ required: true })
-  judge_model_provider: string;
+  @Prop({ required: false })
+  response_model_provider: string;
 
   @Prop({ required: true })
   evaluation_type: string;
@@ -36,6 +37,9 @@ export class Metrics {
 
   @Prop({ required: true })
   userId: mongoose.Types.ObjectId;
+
+  @Prop({ required: false })
+  metadata: metadataType[];
 }
 
 export const MetricsSchema = SchemaFactory.createForClass(Metrics);
