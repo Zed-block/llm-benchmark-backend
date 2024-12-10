@@ -1,15 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
 
-export type TopicDocument = Topic & Document;
+export type CompareDocument = Compare & Document;
+
 
 @Schema({ timestamps: true })
-export class Topic {
-  @Prop({ required: true, enum: ['chat', 'llmrouter', 'compare'] })
-  type: string;
-
+export class Compare {
   @Prop({ required: true })
-  userId: mongoose.Types.ObjectId;
+  title: string;
 
   @Prop({ required: false })
   model1: string;
@@ -22,6 +20,9 @@ export class Topic {
 
   @Prop({ required: false })
   provider2: string;
+
+  @Prop({ required: true })
+  userId: mongoose.Types.ObjectId;
 }
 
-export const TopicSchema = SchemaFactory.createForClass(Topic);
+export const CompareSchema = SchemaFactory.createForClass(Compare);

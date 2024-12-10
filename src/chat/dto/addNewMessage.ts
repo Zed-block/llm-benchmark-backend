@@ -7,9 +7,24 @@ export class askQuestion {
   type: string;
   contentType: string;
   instruction: string;
-  selectedModel: string;
-  temperature: number;
+  provider: string;
+  model: string;
+  temperature?: number;
   topicId?: string;
+}
+
+export class askQuestionForCompare {
+  messageId: string;
+  content: string;
+  role: string;
+  type: string;
+  contentType: string;
+  instruction: string;
+  provider: string;
+  model: string;
+  temperature?: number;
+  topicId?: string;
+  compareId: string;
 }
 
 export class askQuestionRes {
@@ -19,7 +34,8 @@ export class askQuestionRes {
   type: string;
   contentType: string;
   instruction: string;
-  selectedModel: string;
+  model: string;
+  provider: string;
   temperature: number;
   topicId: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;

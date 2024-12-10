@@ -19,10 +19,11 @@ export class askNewQuestionForCompare{
   messageId: string;
   role: string;
   instruction: string;
-  selectedModel: string;
+  model: string;
   type: string;
   contentType: string;
   topicId: mongoose.Types.ObjectId;
+  compareId: mongoose.Types.ObjectId;
 }
 
 export class responseForCompare{
@@ -35,5 +36,6 @@ export class responseForCompare{
   type: string;
   contentType: string;
   queryId: string;
+  compareId: mongoose.Types.ObjectId;
   topicId: mongoose.Types.ObjectId;
 }

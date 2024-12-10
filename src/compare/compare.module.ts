@@ -6,6 +6,7 @@ import { Message, MessageSchema } from 'src/chat/schema/message.schema';
 import { AiServiceModule } from 'src/ai-service/ai-service.module';
 import { PassportModule } from '@nestjs/passport';
 import { TopicModule } from 'src/topic/topic.module';
+import { Compare, CompareSchema } from './compare.schema';
 
 
 const passportModule = PassportModule.register({
@@ -15,6 +16,7 @@ const passportModule = PassportModule.register({
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Message.name, schema: MessageSchema }]),
+    MongooseModule.forFeature([{ name: Compare.name, schema: CompareSchema }]),
     AiServiceModule,
     passportModule,
     TopicModule

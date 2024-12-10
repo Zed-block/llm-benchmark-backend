@@ -27,6 +27,9 @@ export class Message {
   contentType: string;
 
   @Prop({ required: false })
+  provider: string;
+
+  @Prop({ required: false })
   model1: string;
 
   @Prop({ required: false })
@@ -42,9 +45,6 @@ export class Message {
   instruction: string;
 
   @Prop({ required: false })
-  selectedModel: string;
-
-  @Prop({ required: false })
   temperature: number;
 
   @Prop({ required: true })
@@ -52,6 +52,27 @@ export class Message {
 
   @Prop({ required: true })
   topicId: mongoose.Types.ObjectId;
+
+  @Prop({ required: false })
+  compareId: mongoose.Types.ObjectId;
+
+  @Prop({ required: false })
+  totalToken: number;
+
+  @Prop({ required: false })
+  inputToken: number;
+
+  @Prop({ required: false })
+  outputToken: number;
+
+  @Prop({ required: false })
+  totalCost: number;
+
+  @Prop({ required: false })
+  inputCost: number;
+
+  @Prop({ required: false })
+  outputCost: number;
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);

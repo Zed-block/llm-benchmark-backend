@@ -8,8 +8,10 @@ export class compareAsk {
     type: string;
     contentType: string;
     instruction: string;
-    selectedModel: string;
+    model: string;
+    provider: string;
     topicId?: string;
+    compareId?: string;
   };
   message2: {
     messageId: string;
@@ -18,9 +20,24 @@ export class compareAsk {
     type: string;
     contentType: string;
     instruction: string;
-    selectedModel: string;
+    model: string;
+    provider: string;
     topicId?: string;
+    compareId?: string;
   };
+}
+
+export class singleCompare {
+  messageId: string;
+  content: string;
+  role: string;
+  type: string;
+  contentType: string;
+  instruction: string;
+  model: string;
+  provider: string;
+  topicId?: string;
+  compareId: string;
 }
 
 export class compareRes {

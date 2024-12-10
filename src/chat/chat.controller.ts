@@ -21,29 +21,15 @@ import { askQuestion, askQuestionRes } from './dto/addNewMessage';
 @Controller('chat')
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
-
-  // Create a new chat message
-  @Post('create')
-  async createChat(@Body() chatData: Partial<Message>): Promise<Message> {
-    try {
-      return await this.chatService.createChat(chatData);
-    } catch (error) {
-      throw new BadGatewayException(error?.message);
-    }
-  }
-
   // ask a new chat message
   @UseGuards(AuthGuard())
-  @Post('askNewQuestion')
+  @Post('')
   async ask(
     @Body() chatData: askQuestion,
     @CurrentUser() user: CuurentUser,
   ): Promise<askQuestionRes> {
-    try {
-      return await this.chatService.ask(chatData, user);
-    } catch (error) {
-      throw new BadGatewayException(error?.message);
-    }
+    return await this.chatService.ask(chatData, user);
+
   }
 
   // ask a new chat message

@@ -17,6 +17,12 @@ import { LlmRouterService } from './llm-router/llm-router.service';
 import { LlmRouterModule } from './llm-router/llm-router.module';
 import { Message, MessageSchema } from './chat/schema/message.schema';
 import { CompareModule } from './compare/compare.module';
+import { MetricsModule } from './metrics/metrics.module';
+import { PromptModule } from './prompt/prompt.module';
+import { UserFilesModule } from './user-files/user-files.module';
+import { StorageController } from './storage/storage.controller';
+import { StorageService } from './storage/storage.service';
+import { StorageModule } from './storage/storage.module';
 
 @Module({
   imports: [
@@ -50,9 +56,13 @@ import { CompareModule } from './compare/compare.module';
     LlmRouterModule,
     MongooseModule.forFeature([{ name: Message.name, schema: MessageSchema }]),
     CompareModule,
+    MetricsModule,
+    PromptModule,
+    UserFilesModule,
+    StorageModule,
   ],
-  controllers: [AppController, LlmRouterController],
-  providers: [JwtStrategy,AppService, LlmRouterService],
+  controllers: [AppController, LlmRouterController, StorageController],
+  providers: [JwtStrategy,AppService, LlmRouterService, StorageService],
   exports: [JwtModule], // Export JwtModule if needed elsewhere
 })
 export class AppModule {}
