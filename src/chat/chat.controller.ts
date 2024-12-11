@@ -54,6 +54,27 @@ export class ChatController {
     }
   }
 
+  // ask a new chat message
+  @UseGuards(AuthGuard())
+  @Get('getHistory')
+  async getHistory(
+    @Query('page') page: number,
+    @Query('type') type: string,
+    @Query('topicId') topicId: string,
+    @CurrentUser() user: CuurentUser,
+  ) {
+    try {
+      return await this.chatService.getHistory(
+        type,
+        page,
+        topicId,
+        user
+      );
+    } catch (error) {
+      throw new BadGatewayException(error?.message);
+    }
+  }
+
   // Delete a chat message by ID
   @Delete('delete/:id')
   async deleteChat(@Param('id') id: string): Promise<{ deleted: boolean }> {

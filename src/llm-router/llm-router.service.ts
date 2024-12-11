@@ -40,6 +40,7 @@ export class LlmRouterService {
         ...messageData,
         userId: user._id,
         topicId: new mongoose.Types.ObjectId(messageData?.topicId),
+        routing_threshold: messageData?.routing_threshold || 0.1,
       });
 
       // Step 2: Call the AI service for a delayed response
@@ -48,6 +49,7 @@ export class LlmRouterService {
           ...messageData,
           userId: user?._id,
           topicId: new mongoose.Types.ObjectId(messageData?.topicId),
+          routing_threshold: messageData?.routing_threshold || 0.1,
         },
         user,
       );

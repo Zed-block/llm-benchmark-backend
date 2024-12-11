@@ -10,7 +10,7 @@ export class singleAiChat {
 export class singleAiChatRes {
   response: string;
   metadata: metadataType | null;
-  total_time: string;
+  total_time: number;
   model_used: string;
 }
 

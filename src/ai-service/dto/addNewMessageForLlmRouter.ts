@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-export class askNewQuestionForLlmRouter{
+export class askNewQuestionForLlmRouter {
   content: string;
   messageId: string;
   model1: string;
@@ -12,9 +12,10 @@ export class askNewQuestionForLlmRouter{
   type: string;
   contentType: string;
   topicId: mongoose.Types.ObjectId;
+  routing_threshold: number;
 }
 
-export class askNewQuestionForCompare{
+export class askNewQuestionForCompare {
   content: string;
   messageId: string;
   role: string;
@@ -26,7 +27,7 @@ export class askNewQuestionForCompare{
   compareId: mongoose.Types.ObjectId;
 }
 
-export class responseForCompare{
+export class responseForCompare {
   content: string;
   messageId: string;
   instruction: string;
