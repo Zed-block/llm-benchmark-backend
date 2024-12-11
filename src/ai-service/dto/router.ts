@@ -11,7 +11,7 @@ export class aiRouterChat {
 export class singleAiChatRes {
   response: string;
   metadata: metadataType | null;
-  total_time: string;
+  total_time: number;
 }
 
 export class metadataType {

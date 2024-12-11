@@ -23,21 +23,41 @@ export class MetricsService {
 
       console.log('res: ', res);
 
-      if (res?.metadata) {
-        await this.MetricsModel.create({
-          ...messageData,
-          response: JSON.stringify(res.response),
-          metadata: res?.metadata || null,
-          userId: user._id,
-        });
-      } else {
-        await this.MetricsModel.create({
-          ...messageData,
-          response: JSON.stringify(res.response),
-          userId: user._id,
-        });
+      let inputToken = 0;
+      let outputToken = 0;
+      let totalToken = 0;
+
+      let inputCost = 0;
+      let outputCost = 0;
+      let totalCost = 0;
+
+      // Check if metadata exists
+      if (res.metadata && res.metadata.length > 0) {
+        // Loop through metadata array and calculate totals
+        for (let metadata of res.metadata) {
+          inputToken += metadata.tokens.input_tokens;
+          outputToken += metadata.tokens.output_tokens;
+          totalToken += metadata.tokens.total_tokens;
+
+          inputCost += metadata.cost.input_cost;
+          outputCost += metadata.cost.output_cost;
+          totalCost += metadata.cost.total_cost;
+        }
       }
 
+      await this.MetricsModel.create({
+        ...messageData,
+        response: JSON.stringify(res.response),
+        metadata: res?.metadata || null,
+        userId: user._id,
+        inputToken,
+        outputToken,
+        totalToken,
+        inputCost,
+        outputCost,
+        totalCost,
+        timeTaken: res?.total_time || 0,
+      });
       return res?.response;
     } catch (err) {
       console.log(err.message);

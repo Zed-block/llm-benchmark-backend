@@ -69,6 +69,7 @@ export class AiServiceService {
         outputCost: response?.metadata
           ? response.metadata?.cost.output_cost
           : 0,
+        timeTaken: response?.total_time ? response.total_time : 0,
       });
 
       return message;
@@ -119,6 +120,7 @@ export class AiServiceService {
         outputCost: response?.metadata
           ? response.metadata?.cost.output_cost
           : 0,
+        timeTaken: response?.total_time ? response.total_time : 0,
       });
 
       return message;
@@ -164,7 +166,7 @@ export class AiServiceService {
         strong_model: messageData?.model1,
         weak_model: messageData?.model2,
         user_id: String(user._id),
-        routing_threshold: 0.5,
+        routing_threshold: messageData?.routing_threshold,
       };
 
       console.log('body: ', body);
@@ -194,6 +196,7 @@ export class AiServiceService {
         outputCost: response?.metadata
           ? response.metadata?.cost.output_cost
           : 0,
+        timeTaken: response?.total_time ? response.total_time : 0,
       });
 
       return message;

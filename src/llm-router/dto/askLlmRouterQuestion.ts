@@ -11,4 +11,5 @@ export class askLlmRouterQuestion {
   provider1: string;
   provider2: string;
   topicId?: string;
+  routing_threshold?: number;
 }

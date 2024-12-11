@@ -73,6 +73,12 @@ export class Message {
 
   @Prop({ required: false })
   outputCost: number;
+
+  @Prop({ required: false })
+  timeTaken: number;
+
+  @Prop({ required: false })
+  routing_threshold: number;
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);

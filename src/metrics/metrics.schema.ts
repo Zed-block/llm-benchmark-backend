@@ -39,7 +39,25 @@ export class Metrics {
   userId: mongoose.Types.ObjectId;
 
   @Prop({ required: false })
-  metadata: metadataType[];
+  totalToken: number;
+
+  @Prop({ required: false })
+  inputToken: number;
+
+  @Prop({ required: false })
+  outputToken: number;
+
+  @Prop({ required: false })
+  totalCost: number;
+
+  @Prop({ required: false })
+  inputCost: number;
+
+  @Prop({ required: false })
+  outputCost: number;
+
+  @Prop({ required: false })
+  timeTaken: number;
 }
 
 export const MetricsSchema = SchemaFactory.createForClass(Metrics);
