@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   ParseFilePipeBuilder,
@@ -25,10 +26,12 @@ export class UserFilesController {
   @Post('')
   @UseInterceptors(FilesInterceptor('files', 10)) // Allow up to 10 files
   async uploadMultipleFiles(
-    @UploadedFiles() files: any[], // Capture the files correctly
+    @UploadedFiles() files: any[],
+    @Body('type') type: string,
     @CurrentUser() user: CuurentUser,
   ) {
-    return await this.userFilesService.addFile(user, files);
+    const parsedType = JSON.parse(type);
+    return await this.userFilesService.addFile(user, files, parsedType);
   }
 
   @UseGuards(AuthGuard('jwt'))

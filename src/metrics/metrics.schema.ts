@@ -32,11 +32,17 @@ export class Metrics {
   @Prop({ required: true })
   response: string;
 
+  @Prop({ required: false })
+  dataset_metrice_api: string;
+
   @Prop({ required: true, type: Object })
   custom_metrice_data: PointWiseMetrice | PairWiseMetrice;
 
   @Prop({ required: true })
   userId: mongoose.Types.ObjectId;
+
+  @Prop({ required: true })
+  topicId: mongoose.Types.ObjectId;
 
   @Prop({ required: false })
   totalToken: number;

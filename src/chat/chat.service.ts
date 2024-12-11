@@ -32,6 +32,7 @@ export class ChatService {
           userId: user?._id,
           model1: messageData?.model,
           provider1: messageData?.provider,
+          title: messageData?.content,
         };
         let topic = await this.topicService.createTopic(topicBody);
         messageData.topicId = String(topic._id);
