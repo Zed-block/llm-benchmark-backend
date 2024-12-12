@@ -18,13 +18,14 @@ export class StorageKeyService {
   }
 
   async getKeyByName(user, name): Promise<Key | undefined> {
-    return this.keyModel.findOne({ userId: user._id, provider: name });
+    return this.keyModel.findOne({ userId: user._id, models: { $in: [name] } });
   }
 
   async getKeysByUserId(userId: mongoose.Types.ObjectId): Promise<string[]> {
     let allData = await this.keyModel.find({ userId: userId });
-    let names = allData.map((item) => item?.provider);
-    return names;
+    let models = [];
+    let names = allData.map((item) => (models = [...models, ...item?.models]));
+    return models;
   }
 
   async getAllModelsByUserId(userId: mongoose.Types.ObjectId): Promise<Key[]> {
