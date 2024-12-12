@@ -15,6 +15,12 @@ export type PairWiseMetrice = {
   baseline_model_response: string;
 };
 
+export interface WithoutType {
+  question: string;
+  response: string | string[];
+  context: string;
+}
+
 @Schema({ timestamps: true })
 export class Metrics {
   @Prop({ required: false })
@@ -23,7 +29,7 @@ export class Metrics {
   @Prop({ required: false })
   response_model_provider: string;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   evaluation_type: string;
 
   @Prop({ required: true })

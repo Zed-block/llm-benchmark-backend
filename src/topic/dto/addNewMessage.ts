@@ -14,4 +14,5 @@ export class createNewMsgTopic {
   model2?: string;
   provider1?: string;
   provider2?: string;
+  compareId?: mongoose.Types.ObjectId;
 }

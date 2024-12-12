@@ -34,6 +34,7 @@ export class CompareService {
           type: messageData?.type,
           userId: user?._id,
           title: messageData?.content,
+          compareId: new mongoose.Types.ObjectId(messageData?.compareId),
         });
         messageData.topicId = String(topic._id);
       }

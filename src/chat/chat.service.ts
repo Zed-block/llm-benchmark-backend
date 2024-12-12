@@ -110,34 +110,6 @@ export class ChatService {
     }
   }
 
-  async getHistory(
-    type: string,
-    page: number,
-    topicId: string,
-    user: CuurentUser,
-  ) {
-    try {
-      let data = await this.messageModel.aggregate([
-        {
-          $match: {
-            userId: user._id,
-          },
-        },
-        {
-          $group: {
-            _id: '$topicId', // Group by selectedModel
-            messages: { $push: '$$ROOT' },
-          },
-        },
-        {
-          $sort: { 'messages.createdAt': -1 }, // Sort messages by createdAt in descending order
-        },
-      ]);
-      // return await this.getSingleMsg(topicId, page, lastMessageId);
-    } catch (err) {
-      console.log('ERR', err.Message);
-    }
-  }
 
   // Delete a chat message by ID
   async deleteChatById(chatId: string): Promise<{ deleted: boolean }> {

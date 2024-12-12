@@ -12,6 +12,9 @@ export class Topic {
   userId: mongoose.Types.ObjectId;
 
   @Prop({ required: false })
+  compareId: mongoose.Types.ObjectId;
+
+  @Prop({ required: false })
   model1: string;
 
   @Prop({ required: false })

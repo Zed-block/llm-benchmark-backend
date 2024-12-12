@@ -28,7 +28,7 @@ export class MetricsService {
           title:
             messageData?.evaluation_metrice +
             '-' +
-            messageData?.evaluation_type,
+            messageData?.evaluation_type || "noType",
           type: 'metrics',
           userId: user?._id,
         };
@@ -54,27 +54,52 @@ export class MetricsService {
         user,
       );
 
+      console.log('res: ', res);
+
       let inputToken = 0;
       let outputToken = 0;
       let totalToken = 0;
-
+      
       let inputCost = 0;
       let outputCost = 0;
       let totalCost = 0;
-
+      
       // Check if metadata exists
-      if (res.metadata && res.metadata.length > 0) {
-        // Loop through metadata array and calculate totals
-        for (let metadata of res.metadata) {
-          inputToken += metadata.tokens.input_tokens;
-          outputToken += metadata.tokens.output_tokens;
-          totalToken += metadata.tokens.total_tokens;
-
-          inputCost += metadata.cost.input_cost;
-          outputCost += metadata.cost.output_cost;
-          totalCost += metadata.cost.total_cost;
+      if (res.metadata) {
+        // Case 1: Metadata is an array
+        if (Array.isArray(res.metadata)) {
+          for (let metadata of res.metadata) {
+            inputToken += metadata.tokens.input_tokens;
+            outputToken += metadata.tokens.output_tokens;
+            totalToken += metadata.tokens.total_tokens;
+      
+            inputCost += metadata.cost.input_cost;
+            outputCost += metadata.cost.output_cost;
+            totalCost += metadata.cost.total_cost;
+          }
+        }
+        // Case 2: Metadata is a single object
+        else if (typeof res.metadata === 'object') {
+          inputToken += res.metadata.tokens.input_tokens;
+          outputToken += res.metadata.tokens.output_tokens;
+          totalToken += res.metadata.tokens.total_tokens;
+      
+          inputCost += res.metadata.cost.input_cost;
+          outputCost += res.metadata.cost.output_cost;
+          totalCost += res.metadata.cost.total_cost;
         }
       }
+      
+      // Case 3: Metadata is null or undefined - no action needed
+      
+      console.log('Input Tokens: ', inputToken);
+      console.log('Output Tokens: ', outputToken);
+      console.log('Total Tokens: ', totalToken);
+      
+      console.log('Input Cost: ', inputCost);
+      console.log('Output Cost: ', outputCost);
+      console.log('Total Cost: ', totalCost);
+      
 
       await this.MetricsModel.create({
         ...messageData,

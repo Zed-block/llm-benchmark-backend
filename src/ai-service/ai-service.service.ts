@@ -230,6 +230,19 @@ export class AiServiceService {
     }
   }
 
+  async getEndPoint(data: metricsRun): Promise<string> {
+    if (
+      data?.evaluation_metrice === 'jailbreak' ||
+      data?.evaluation_metrice === 'multi_query_accuracy'
+    ) {
+      return process.env.JAILBREAK_AND_MULTIQUERY_END_POINT;
+    }
+    if (data?.evaluation_metrice === 'LLMContexRecall') {
+      return process.env.LLMContexRecall_END_POINT;
+    }
+    return process.env.CUSTOM_METRICE_END_POINT;
+  }
+
   async getResponseForMetrics(
     messageData: metricsRun,
     user: CuurentUser,
@@ -239,10 +252,25 @@ export class AiServiceService {
         ...messageData,
         user_id: String(user?._id),
       };
-      console.log('body: ', body);
+      let endPoint = await this.getEndPoint(body);
+
+      if (
+        body?.evaluation_metrice === 'jailbreak' ||
+        body?.evaluation_metrice === 'LLMContexRecall' ||
+        body?.evaluation_metrice === 'multi_query_accuracy'
+      ) {
+        if (body?.response_model_name) {
+          let { response_model_name, ...rest } = body;
+          body = {
+            ...rest,
+            model_name: body?.response_model_name,
+          };
+        }
+      }
+      console.log('data,', body);
       return await axios
         .post(
-          `${process.env.AGENT_BASE_URL}/${process.env.CUSTOM_METRICE_END_POINT}`,
+          `${process.env.AGENT_BASE_URL}/${endPoint}`,
           body, // Pass the body object here
           {
             headers: {
