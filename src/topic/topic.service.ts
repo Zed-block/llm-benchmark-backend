@@ -76,12 +76,6 @@ export class TopicService {
           },
         },
         {
-          $skip: (page - 1) * limit, // Skip the documents for previous pages
-        },
-        {
-          $limit: limit, // Limit the number of documents per page
-        },
-        {
           $lookup: {
             from: 'messages', // Join with messages collection
             localField: '_id', // Field in topicModel
@@ -208,6 +202,7 @@ export class TopicService {
             compareDetails: 1,
             _id: 1,
             type: 1,
+            title: 1,
             inputCost: '$totalInputCost',
             outputCost: '$totalOutputCost',
             lastMessage: '$latMessageAt',
@@ -232,7 +227,7 @@ export class TopicService {
           let type = item?.title ? item?.title?.split('-')[0] : 'fluency';
           return {
             ...item,
-            link: `/en/metrics?metric=${type}`,
+            link: `/en/metrics?metric=${type}&topic=${item?._id}`,
           };
         }
         return item; // Return the item as-is if no conditions match
