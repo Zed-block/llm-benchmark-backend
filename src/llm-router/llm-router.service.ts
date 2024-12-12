@@ -32,6 +32,7 @@ export class LlmRouterService {
           model2: messageData?.model2,
           provider1: messageData?.provider1,
           provider2: messageData?.provider2,
+          title: messageData?.content,
         });
         messageData.topicId = String(topic._id);
       }

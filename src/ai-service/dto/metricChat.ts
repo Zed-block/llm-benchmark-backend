@@ -9,7 +9,7 @@ export class metricChat {
 
 export class metricChatRes {
   response: string;
-  metadata: metadataType[] | null;
+  metadata: metadataType[] | metadataType | null;
   total_time: number;
 }
 

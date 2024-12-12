@@ -13,7 +13,7 @@ export class UserFilesService {
     private readonly storageService: StorageService,
   ) {}
 
-  async addFile(user, files: any) {
+  async addFile(user, files: any, parsedType: string[]) {
     try {
       for (const file of files) {
         try {
@@ -31,6 +31,7 @@ export class UserFilesService {
             fileName: file.originalname,
             path: path,
             type: file.mimetype,
+            metricType: parsedType,
           };
 
           // Save file metadata to database
@@ -57,6 +58,7 @@ export class UserFilesService {
     // Find user prompts with filters
     const userfiles = await this.userFilesModel
       .find({ ...filters, userId: user._id })
+      .sort({ createdAt: -1 }) 
       .exec();
 
     // Combine results

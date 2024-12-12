@@ -16,6 +16,9 @@ export class UserFiles {
 
   @Prop({ required: false })
   type: string;
+
+  @Prop({ required: false })
+  metricType: string[];
 }
 
 export const UserFilesSchema = SchemaFactory.createForClass(UserFiles);

@@ -15,6 +15,12 @@ export type PairWiseMetrice = {
   baseline_model_response: string;
 };
 
+export interface WithoutType {
+  question: string;
+  response: string | string[];
+  context: string;
+}
+
 @Schema({ timestamps: true })
 export class Metrics {
   @Prop({ required: false })
@@ -23,7 +29,7 @@ export class Metrics {
   @Prop({ required: false })
   response_model_provider: string;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   evaluation_type: string;
 
   @Prop({ required: true })
@@ -32,11 +38,17 @@ export class Metrics {
   @Prop({ required: true })
   response: string;
 
+  @Prop({ required: false })
+  dataset_metrice_api: string;
+
   @Prop({ required: true, type: Object })
   custom_metrice_data: PointWiseMetrice | PairWiseMetrice;
 
   @Prop({ required: true })
   userId: mongoose.Types.ObjectId;
+
+  @Prop({ required: true })
+  topicId: mongoose.Types.ObjectId;
 
   @Prop({ required: false })
   totalToken: number;
