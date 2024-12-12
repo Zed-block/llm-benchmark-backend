@@ -206,6 +206,7 @@ export class TopicService {
             inputCost: '$totalInputCost',
             outputCost: '$totalOutputCost',
             lastMessage: '$latMessageAt',
+            compareId: 1,
           },
         },
       ]);
