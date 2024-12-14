@@ -216,7 +216,7 @@ export class AiServiceService {
       return message;
     } catch (error) {
       console.log('error at get res', error);
-      throw new BadGatewayException(error?.message);
+      throw new BadGatewayException(error);
     }
   }
 
@@ -532,7 +532,6 @@ export class AiServiceService {
     user: CuurentUser,
   ): Promise<any> {
     try {
-      console.log('messageData: ', messageData);
       let validateData = await this.validateMetricsData(messageData);
       let body = {
         ...validateData,
@@ -570,6 +569,33 @@ export class AiServiceService {
         .catch((err) => {
           console.log('err?.response', err?.response?.data);
           throw new BadGatewayException(err?.response?.data?.detail);
+        });
+    } catch (err) {
+      throw new BadGatewayException(err);
+    }
+  }
+
+  async validateApiKey(data: {
+    api_key: string;
+    provider: string;
+  }): Promise<any> {
+    try {
+      return await axios
+        .post(
+          `${process.env.AGENT_BASE_URL}/${process.env.API_KEY_VALIDATION_END_POINT}`,
+          data,
+          // Pass the body object here
+          {
+            headers: {
+              'Content-Type': 'application/json', // Add headers if needed
+            },
+          },
+        )
+        .then((res) => {
+          return res?.data?.validate;
+        })
+        .catch((err) => {
+          throw new BadGatewayException(err.response.data.detail);
         });
     } catch (err) {
       throw new BadGatewayException(err);

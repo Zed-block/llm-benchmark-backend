@@ -2,15 +2,24 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { Key, KeyDocument } from './storage.schema';
+import { AiServiceService } from 'src/ai-service/ai-service.service';
 
 @Injectable()
 export class StorageKeyService {
   constructor(
     @InjectModel(Key.name) private readonly keyModel: Model<KeyDocument>,
+    private readonly aiService: AiServiceService,
   ) {}
 
-  async createKey(keyData: Partial<any>, user): Promise<Key> {
+  async createKey(keyData: Partial<Key>, user): Promise<Key> {
     try {
+      let validate = await this.aiService.validateApiKey({
+        api_key: keyData?.apiKey,
+        provider: keyData?.provider,
+      });
+
+      console.log('validate: ', validate);
+
       return await this.keyModel.create({ ...keyData, userId: user._id });
     } catch (error) {
       throw new BadRequestException(error.message);
