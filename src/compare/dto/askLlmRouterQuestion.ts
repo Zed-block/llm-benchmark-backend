@@ -12,6 +12,8 @@ export class compareAsk {
     provider: string;
     topicId?: string;
     compareId?: string;
+    compareQuestionId: string;
+    compareSide: string;
   };
   message2: {
     messageId: string;
@@ -24,6 +26,8 @@ export class compareAsk {
     provider: string;
     topicId?: string;
     compareId?: string;
+    compareQuestionId: string;
+    compareSide: string;
   };
 }
 
@@ -38,6 +42,8 @@ export class singleCompare {
   provider: string;
   topicId?: string;
   compareId: string;
+  compareQuestionId: string;
+  compareSide: string;
 }
 
 export class compareRes {

@@ -5,7 +5,7 @@ export type TopicDocument = Topic & Document;
 
 @Schema({ timestamps: true })
 export class Topic {
-  @Prop({ required: true, enum: ['chat', 'llmrouter', 'compare',"metrics"] })
+  @Prop({ required: true, enum: ['chat', 'llmrouter', 'compare', 'metrics'] })
   type: string;
 
   @Prop({ required: true })
@@ -28,6 +28,9 @@ export class Topic {
 
   @Prop({ required: true })
   title: string;
+
+  @Prop({ required: false })
+  compareSide: string;
 }
 
 export const TopicSchema = SchemaFactory.createForClass(Topic);

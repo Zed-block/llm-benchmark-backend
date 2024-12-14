@@ -15,4 +15,5 @@ export class createNewMsgTopic {
   provider1?: string;
   provider2?: string;
   compareId?: mongoose.Types.ObjectId;
+  compareSide?: string;
 }

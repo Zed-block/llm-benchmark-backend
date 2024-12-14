@@ -35,6 +35,7 @@ export class CompareService {
           userId: user?._id,
           title: messageData?.content,
           compareId: new mongoose.Types.ObjectId(messageData?.compareId),
+          compareSide: messageData?.compareSide,
         });
         messageData.topicId = String(topic._id);
       }
@@ -44,6 +45,7 @@ export class CompareService {
         userId: user._id,
         topicId: new mongoose.Types.ObjectId(messageData?.topicId),
         compareId: new mongoose.Types.ObjectId(messageData?.compareId),
+        compareQuestionId: messageData?.compareQuestionId,
       });
 
       const aiResponse = await this.aiService.getResponseForComape(
@@ -119,32 +121,7 @@ export class CompareService {
         },
       ];
 
-      // Add limit to get only the specified number of messages
-      // pipeline.push({ $limit: limit + 1 }); // Fetch one extra to check for next page
-
-      // Execute the aggregation
       const results = await this.messageModel.aggregate(pipeline).exec();
-
-      // Check if there are any results for the selected model
-      // if (lastMessageId) {
-      //   let messages = results.find(
-      //     (item) => String(item?._id) === String(topicId),
-      //   );
-      //   const lastMessageIndex = messages?.messages.findIndex(
-      //     (msg) => msg.messageId === lastMessageId,
-      //   );
-      //   const nextPageAvailable =
-      //     messages.length > lastMessageIndex + 1 + limit;
-
-      //   // Return the messages and last index for the selected model
-      //   return {
-      //     page,
-      //     messages: messages?.messages
-      //       .slice(lastMessageIndex + 1, lastMessageIndex + 1 + limit)
-      //     ,
-      //     nextPageAvailable,
-      //   };
-      // }
 
       if (results?.length > 0) {
         // If no model is specified or model doesn't exist, return grouped messages

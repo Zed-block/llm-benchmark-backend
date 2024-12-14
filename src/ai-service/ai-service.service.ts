@@ -13,9 +13,23 @@ import {
 import { chatReplyForLlmRouter } from './dto/replyForLlmRouter';
 import { InjectModel } from '@nestjs/mongoose';
 import axios from 'axios';
-import { metricsRun } from 'src/metrics/dto/ask';
+import {
+  jailBreakDataType,
+  llmContextDataType,
+  metricsRun,
+  multiqueryaccuracyDataType,
+  pairWiseData,
+  pointWiseData,
+} from 'src/metrics/dto/ask';
 import { singleAiChat, singleAiChatRes } from './dto/singleChat';
 import { aiRouterChat } from './dto/router';
+import {
+  jailBreakCustomMetriceDataType,
+  llmCustomMetriceDataType,
+  multiqueryaccuracyCustomMetriceDataType,
+  PairWiseMetrice,
+  PointWiseMetrice,
+} from 'src/metrics/metrics.schema';
 
 @Injectable()
 export class AiServiceService {
@@ -102,6 +116,7 @@ export class AiServiceService {
         provider: messageData?.provider,
         userId: user?._id,
         type: messageData?.type,
+        compareQuestionId: messageData?.compareQuestionId,
         contentType: 'answer',
         queryId: messageData?.messageId,
         topicId: new mongoose.Types.ObjectId(messageData?.topicId),
@@ -169,7 +184,6 @@ export class AiServiceService {
         routing_threshold: messageData?.routing_threshold,
       };
 
-      console.log('body: ', body);
       let response: singleAiChatRes = await this.getAiResRouter(body);
 
       const message = await this.createChat({
@@ -243,13 +257,285 @@ export class AiServiceService {
     return process.env.CUSTOM_METRICE_END_POINT;
   }
 
+  async validateMetricsData(data: metricsRun): Promise<metricsRun> {
+    try {
+      if (
+        data?.evaluation_metrice != 'jailbreak' &&
+        data?.evaluation_metrice != 'multi_query_accuracy' &&
+        data?.evaluation_metrice != 'LLMContexRecall'
+      ) {
+        if (data?.evaluation_type === 'pointwise') {
+          const { evaluation_metrice, evaluation_type, custom_metrice_data } =
+            data;
+          const newMsgData: pointWiseData = {
+            evaluation_metrice,
+            evaluation_type,
+          };
+
+          // Initialize custom_metrice_data if applicable
+          if (custom_metrice_data) {
+            const customData: Partial<PointWiseMetrice> = {};
+
+            if ('prompt' in custom_metrice_data && custom_metrice_data.prompt) {
+              customData.prompt = custom_metrice_data.prompt;
+            }
+
+            if (
+              'response' in custom_metrice_data &&
+              custom_metrice_data.response &&
+              custom_metrice_data.response?.length > 0
+            ) {
+              customData.response = custom_metrice_data.response as string;
+            }
+
+            if (
+              'history' in custom_metrice_data &&
+              custom_metrice_data.history &&
+              (data?.evaluation_metrice == 'multi_turn_chat_safety' ||
+                data?.evaluation_metrice == 'multi_turn_chat_quality')
+            ) {
+              customData.history = custom_metrice_data.history as string;
+            }
+
+            //@ts-ignore
+            newMsgData.custom_metrice_data =
+              Object.keys(customData).length > 0 ? customData : undefined;
+          }
+
+          // Add response_model_name if response is missing
+          if (
+            !custom_metrice_data?.response ||
+            custom_metrice_data.response?.length == 0
+          ) {
+            newMsgData.response_model_name = data.response_model_name;
+          }
+
+          // Add response_model_name if response is missing
+
+          return newMsgData;
+        } else {
+          const {
+            evaluation_metrice,
+            evaluation_type,
+            custom_metrice_data,
+            response_model_name,
+            baseline_model_name,
+          } = data;
+          const newMsgData: pairWiseData = {
+            evaluation_metrice,
+            evaluation_type,
+          };
+
+          // Initialize custom_metrice_data if applicable
+          if (custom_metrice_data) {
+            const customData: Partial<PairWiseMetrice> = {};
+
+            if ('prompt' in custom_metrice_data && custom_metrice_data.prompt) {
+              customData.prompt = custom_metrice_data.prompt;
+            }
+
+            if (
+              'response' in custom_metrice_data &&
+              custom_metrice_data.response &&
+              custom_metrice_data.response?.length > 0
+            ) {
+              customData.response = custom_metrice_data.response as string;
+            }
+            if (
+              'baseline_model_response' in custom_metrice_data &&
+              custom_metrice_data.baseline_model_response &&
+              custom_metrice_data.baseline_model_response?.length > 0
+            ) {
+              customData.baseline_model_response =
+                custom_metrice_data.baseline_model_response as string;
+            }
+
+            if (
+              'history' in custom_metrice_data &&
+              custom_metrice_data.history &&
+              (data?.evaluation_metrice == 'multi_turn_chat_safety' ||
+                data?.evaluation_metrice == 'multi_turn_chat_quality')
+            ) {
+              customData.history = custom_metrice_data.history as string;
+            }
+
+            //@ts-ignore
+            newMsgData.custom_metrice_data =
+              Object.keys(customData).length > 0 ? customData : undefined;
+          }
+
+          // Add response_model_name if response is missing
+          if (
+            !custom_metrice_data?.response ||
+            custom_metrice_data.response?.length == 0
+          ) {
+            newMsgData.response_model_name = response_model_name;
+          }
+
+          if (
+            //@ts-ignore
+            !custom_metrice_data?.baseline_model_response ||
+            //@ts-ignore
+            custom_metrice_data?.baseline_model_response?.length == 0
+          ) {
+            newMsgData.baseline_model_name = baseline_model_name;
+          }
+          return newMsgData;
+        }
+      } else {
+        if (data?.evaluation_metrice == 'jailbreak') {
+          const {
+            evaluation_metrice,
+            response_model_name,
+            custom_metrice_data,
+          } = data;
+          const newMsgData: jailBreakDataType = {
+            evaluation_metrice,
+            response_model_name,
+          };
+
+          if (custom_metrice_data) {
+            const customData: Partial<jailBreakCustomMetriceDataType> = {};
+
+            if (
+              'question' in custom_metrice_data &&
+              custom_metrice_data.question
+            ) {
+              customData.question = custom_metrice_data.question;
+            }
+
+            if (
+              'response' in custom_metrice_data &&
+              custom_metrice_data.response &&
+              custom_metrice_data.response?.length > 0
+            ) {
+              customData.response = custom_metrice_data.response as string;
+            }
+
+            //@ts-ignore
+            newMsgData.custom_metrice_data =
+              Object.keys(customData).length > 0 ? customData : undefined;
+          }
+          return newMsgData;
+        }
+        if (data?.evaluation_metrice == 'multi_query_accuracy') {
+          const {
+            evaluation_metrice,
+            response_model_name,
+            custom_metrice_data,
+          } = data;
+          const newMsgData: multiqueryaccuracyDataType = {
+            evaluation_metrice,
+            response_model_name,
+          };
+
+          if (custom_metrice_data) {
+            const customData: Partial<multiqueryaccuracyCustomMetriceDataType> =
+              {};
+
+            if (
+              'question' in custom_metrice_data &&
+              custom_metrice_data.question
+            ) {
+              customData.question = custom_metrice_data.question;
+            }
+
+            if (
+              'response' in custom_metrice_data &&
+              custom_metrice_data.response &&
+              custom_metrice_data.response?.length > 0
+            ) {
+              let arr = [];
+              if (
+                custom_metrice_data.response[0] &&
+                custom_metrice_data.response[0]?.length > 0
+              ) {
+                arr.push(custom_metrice_data.response[0]);
+              }
+              if (
+                custom_metrice_data.response[1] &&
+                custom_metrice_data.response[1]?.length > 0
+              ) {
+                arr.push(custom_metrice_data.response[1]);
+              }
+
+              if (arr?.length > 0) {
+                customData.response = arr;
+              }
+            }
+
+            //@ts-ignore
+            newMsgData.custom_metrice_data =
+              Object.keys(customData).length > 0 ? customData : undefined;
+          }
+          return newMsgData;
+        }
+        if (data?.evaluation_metrice == 'LLMContexRecall') {
+          const {
+            evaluation_metrice,
+            response_model_name,
+            custom_metrice_data,
+          } = data;
+          const newMsgData: llmContextDataType = {
+            evaluation_metrice,
+            response_model_name,
+          };
+
+          if (custom_metrice_data) {
+            const customData: Partial<llmCustomMetriceDataType> = {};
+
+            if (
+              'question' in custom_metrice_data &&
+              custom_metrice_data.question
+            ) {
+              customData.question = custom_metrice_data.question;
+            }
+
+            if (
+              'response' in custom_metrice_data &&
+              custom_metrice_data.response &&
+              custom_metrice_data.response?.length > 0
+            ) {
+              customData.response = custom_metrice_data.response as string;
+            }
+
+            if (
+              'context' in custom_metrice_data &&
+              custom_metrice_data.context &&
+              custom_metrice_data.context?.length > 0
+            ) {
+              let newContext = [];
+              //@ts-ignore
+              data?.custom_metrice_data.context?.forEach((item) => {
+                if (item?.trim()?.length > 0) {
+                  newContext = [...newContext, item];
+                }
+              });
+              customData.context = newContext;
+            }
+
+            //@ts-ignore
+            newMsgData.custom_metrice_data =
+              Object.keys(customData).length > 0 ? customData : undefined;
+          }
+          return newMsgData;
+        }
+        return data;
+      }
+    } catch (err) {
+      console.log('err', err.message);
+    }
+  }
+
   async getResponseForMetrics(
     messageData: metricsRun,
     user: CuurentUser,
   ): Promise<any> {
     try {
+      console.log('messageData: ', messageData);
+      let validateData = await this.validateMetricsData(messageData);
       let body = {
-        ...messageData,
+        ...validateData,
         user_id: String(user?._id),
       };
       let endPoint = await this.getEndPoint(body);
@@ -282,10 +568,11 @@ export class AiServiceService {
           return res?.data;
         })
         .catch((err) => {
+          console.log('err?.response', err?.response?.data);
           throw new BadGatewayException(err?.response?.data?.detail);
         });
     } catch (err) {
-      throw new BadGatewayException(err?.response?.data?.detail);
+      throw new BadGatewayException(err);
     }
   }
 }
