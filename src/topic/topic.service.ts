@@ -219,9 +219,16 @@ export class TopicService {
           return { ...item, link: `/en/llmrouter?topicId=${item._id}` };
         }
         if (item?.type === 'compare') {
+          let topic1 =
+            item.compareDetails?.find((item) => item?.ccompareSide == 'left') ||
+            item.compareDetails?.[0];
+          let topic2 =
+            item.compareDetails?.find(
+              (item) => item?.ccompareSide == 'right',
+            ) || item.compareDetails?.[1];
           return {
             ...item,
-            link: `/en/chat?compare=true&compare=${item?.compareId || ''}&topic1=${item.compareDetails?.[0]?._id}&topic2=${item.compareDetails?.[1]?._id}`,
+            link: `/en/chat?compare=true&compareId=${item?.compareId || ''}&topic1=${topic1?._id}&topic2=${topic2?._id}`,
           };
         }
         if (item?.type === 'metrics') {

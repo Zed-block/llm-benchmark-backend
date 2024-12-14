@@ -25,6 +25,7 @@ export class askQuestionForCompare {
   temperature?: number;
   topicId?: string;
   compareId: string;
+  compareQuestionId: string;
 }
 
 export class askQuestionRes {
