@@ -70,11 +70,7 @@ export class TopicService {
             userId: user._id, // Filter by userId
           },
         },
-        {
-          $sort: {
-            createdAt: -1,
-          },
-        },
+
         {
           $lookup: {
             from: 'messages', // Join with messages collection
@@ -137,8 +133,12 @@ export class TopicService {
                 },
               ],
             },
+          },
+        },
+        {
+          $addFields: {
             // Add the latest createdAt date from either messages or metrics
-            latMessageAt: {
+            lastMessageAt: {
               $cond: {
                 if: { $gt: [{ $size: '$messageDetails' }, 0] }, // Check if there are any messages
                 then: {
@@ -205,8 +205,13 @@ export class TopicService {
             title: 1,
             inputCost: '$totalInputCost',
             outputCost: '$totalOutputCost',
-            lastMessage: '$latMessageAt',
+            lastMessage: '$lastMessageAt',
             compareId: 1,
+          },
+        },
+        {
+          $sort: {
+            latMessageAt: -1,
           },
         },
       ]);
