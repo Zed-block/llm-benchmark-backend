@@ -124,11 +124,26 @@ export class CompareService {
       const results = await this.messageModel.aggregate(pipeline).exec();
 
       if (results?.length > 0) {
+        let topics = await this.topicService.getTopicsByComapareId(compare);
+
         // If no model is specified or model doesn't exist, return grouped messages
         const nextPageAvailable = results[0]?.messages.length > limit;
 
-        let message1 = results[0]?.messages;
-        let message2 = results[1]?.messages;
+        let leftSide =
+          topics?.find((item: any) => item?.compareSide === 'left') ||
+          results[0];
+
+        let rightSide =
+          topics?.find((item: any) => item?.compareSide === 'right') ||
+          results[1];
+
+        let message1 = results.find(
+          (item) => String(item._id) == String(leftSide._id),
+        ).messages;
+
+        let message2 = results.find(
+          (item) => String(item._id) == String(rightSide._id),
+        ).messages;
 
         return {
           page,

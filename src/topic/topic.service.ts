@@ -30,6 +30,14 @@ export class TopicService {
     }
   }
 
+  async getTopicsByComapareId(id: mongoose.Types.ObjectId): Promise<topicType[]> {
+    try {
+      return await this.topicModel.find({ compareId: id });
+    } catch (err) {
+      console.log('err', err.message);
+    }
+  }
+
   // Delete a topic by its ID
   async deleteTopic(
     id: mongoose.Types.ObjectId,
