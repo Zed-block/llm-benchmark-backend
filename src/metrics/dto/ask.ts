@@ -1,4 +1,10 @@
-import { jailBreakCustomMetriceDataType, llmCustomMetriceDataType, PairWiseMetrice, PointWiseMetrice, WithoutType } from '../metrics.schema';
+import {
+  jailBreakCustomMetriceDataType,
+  llmCustomMetriceDataType,
+  PairWiseMetrice,
+  PointWiseMetrice,
+  WithoutType,
+} from '../metrics.schema';
 
 export class metricsRun {
   response_model_name?: string;
@@ -7,11 +13,15 @@ export class metricsRun {
   evaluation_type?: string;
   evaluation_metrice: string;
   baseline_model_name?: string;
-  dataset_path?: string;
   question?: string;
-  fileId?: string;
-  topicId?: string;
   custom_metrice_data?: PairWiseMetrice | PointWiseMetrice | WithoutType;
+}
+
+export class metricsRunForDb {
+  evaluation_type: string;
+  evaluation_metrice: string;
+  dataset_path?: string;
+  topic_id: string;
 }
 
 export class pointWiseData {
@@ -56,10 +66,17 @@ export class metricsRunInput {
   evaluation_type?: string;
   evaluation_metrice: string;
   baseline_model_name?: string;
-  dataset_path?: string;
   question?: string;
   fileId?: string;
   topicId?: string;
   messageTopic?: string;
   custom_metrice_data?: PairWiseMetrice | PointWiseMetrice | WithoutType;
+}
+
+export class metricsRunInputForDb {
+  evaluation_type: string;
+  evaluation_metrice: string;
+  dataset_path?: string;
+  fileId: string;
+  topicId?: string;
 }

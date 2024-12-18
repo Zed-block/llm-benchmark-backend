@@ -2,7 +2,9 @@ import {
   BadGatewayException,
   Body,
   Controller,
+  Get,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -20,5 +22,12 @@ export class MetricsController {
   @Post('ask')
   async ask(@Body() chatData: metricsRun, @CurrentUser() user: CuurentUser) {
     return await this.metricsService.ask(chatData, user);
+  }
+
+  // ask a new metrics
+  @UseGuards(AuthGuard("jwt"))
+  @Get('getdbMetricsRes')
+  async getdbMetricsRes(@Query("runId") runId: string, @CurrentUser() user: CuurentUser) {
+    return await this.metricsService.getdbMetricsRes(runId, user);
   }
 }
