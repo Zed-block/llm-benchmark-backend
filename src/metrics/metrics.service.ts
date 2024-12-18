@@ -215,14 +215,14 @@ export class MetricsService {
       }
       if (status?.status === 'ERROR') {
         return {
-          resType: 'STARTED',
+          resType: 'ERROR',
           message: status?.error_details?.type || 'Error',
         };
       }
       return {
-        resType: 'STARTED',
+        resType: 'ERROR',
         message:
-          'Dataset evaluation started. You will be notified upon completion.',
+          'Error at status',
       };
     } catch (err) {
       console.log(err.message);
