@@ -17,6 +17,7 @@ import {
   jailBreakDataType,
   llmContextDataType,
   metricsRun,
+  metricsRunForDb,
   multiqueryaccuracyDataType,
   pairWiseData,
   pointWiseData,
@@ -572,6 +573,48 @@ export class AiServiceService {
         });
     } catch (err) {
       throw new BadGatewayException(err);
+    }
+  }
+
+  async getResponseForDatabaseMetrics(
+    messageData: metricsRunForDb,
+    user: CuurentUser,
+  ): Promise<any> {
+    try {
+      let body = {
+        ...messageData,
+        user_id: String(user?._id),
+      };
+
+      console.log('data,', JSON.stringify(body));
+      return await axios
+        .post(
+          `${process.env.AGENT_BASE_URL}/${process.env.DATASET_METRICE_EVALUATION_END_POINT}`,
+          body, // Pass the body object here
+          {
+            headers: {
+              'Content-Type': 'application/json', // Add headers if needed
+            },
+          },
+        )
+        .then((res) => {
+          return {
+            resType: 'STARTED',
+            message: res?.data?.response,
+          };
+        })
+        .catch((err) => {
+          console.log('err?.response', err?.response?.data);
+          return {
+            resType: 'ERROR',
+            message: err?.response?.data?.detail,
+          };
+        });
+    } catch (err) {
+      return {
+        resType: 'ERROR',
+        message: err,
+      };
     }
   }
 

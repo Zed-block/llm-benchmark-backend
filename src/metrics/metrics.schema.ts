@@ -56,7 +56,7 @@ export class Metrics {
   @Prop({ required: true })
   evaluation_metrice: string;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   response: string;
 
   @Prop({ required: false })
@@ -65,7 +65,7 @@ export class Metrics {
   @Prop({ required: false })
   dataset_metrice_api: string;
 
-  @Prop({ required: true, type: Object })
+  @Prop({ required: false, type: Object })
   custom_metrice_data: PointWiseMetrice | PairWiseMetrice;
 
   @Prop({ required: true })

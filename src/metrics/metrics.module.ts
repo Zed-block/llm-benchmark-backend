@@ -8,6 +8,8 @@ import { PassportModule } from '@nestjs/passport';
 import { UserFiles, UserFilesSchema } from 'src/user-files/user-files.schema';
 import { StorageModule } from 'src/storage/storage.module';
 import { TopicModule } from 'src/topic/topic.module';
+import { EvaluationData, EvaluationDataSchema } from './schema/evaluationData.schema';
+import { EvaluationStatus, EvaluationStatusSchema } from './schema/evaluationStatus.schema';
 
 const passportModule = PassportModule.register({
   defaultStrategy: 'jwt',
@@ -18,6 +20,12 @@ const passportModule = PassportModule.register({
     MongooseModule.forFeature([{ name: Metrics.name, schema: MetricsSchema }]),
     MongooseModule.forFeature([
       { name: UserFiles.name, schema: UserFilesSchema },
+    ]),
+    MongooseModule.forFeature([
+      { name: EvaluationData.name, schema: EvaluationDataSchema },
+    ]),
+    MongooseModule.forFeature([
+      { name: EvaluationStatus.name, schema: EvaluationStatusSchema },
     ]),
     AiServiceModule,
     passportModule,
