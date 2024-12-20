@@ -6,10 +6,8 @@ export class askLlmRouterQuestion {
   role: string;
   type: string;
   contentType: string;
-  model1: string;
-  model2: string;
-  provider1: string;
-  provider2: string;
+  strongModels: string[];
+  weakModels: string[];
   topicId?: string;
   routing_threshold?: number;
 }

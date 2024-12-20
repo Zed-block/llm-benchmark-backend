@@ -2,7 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Topic, TopicDocument } from './schema/topic.schema';
 import mongoose, { Model } from 'mongoose';
-import { createNewMsgTopic, topicType } from './dto/addNewMessage';
+import {
+  createNewMsgTopic,
+  createNewMsgTopicForCompare,
+  createNewMsgTopicForLlmRouter,
+  topicType,
+} from './dto/addNewMessage';
 import { CuurentUser } from 'src/auth/dto/currentUser.dto';
 
 @Injectable()
@@ -22,6 +27,32 @@ export class TopicService {
     }
   }
 
+  async createTopicForCompare(
+    createTopicDto: createNewMsgTopicForCompare,
+  ): Promise<topicType> {
+    try {
+      console.log('createTopicDto: ', createTopicDto);
+      const createdTopic = new this.topicModel(createTopicDto);
+      //@ts-ignore
+      return createdTopic.save();
+    } catch (err) {
+      console.log('err', err.message);
+    }
+  }
+
+  async createTopicFromLlmRouter(
+    createTopicDto: createNewMsgTopicForLlmRouter,
+  ): Promise<topicType> {
+    try {
+      console.log('createTopicDto: ', createTopicDto);
+      const createdTopic = new this.topicModel(createTopicDto);
+      //@ts-ignore
+      return createdTopic.save();
+    } catch (err) {
+      console.log('err', err.message);
+    }
+  }
+
   async getTopic(id: mongoose.Types.ObjectId): Promise<topicType> {
     try {
       return await this.topicModel.findById(id);
@@ -30,7 +61,9 @@ export class TopicService {
     }
   }
 
-  async getTopicsByComapareId(id: mongoose.Types.ObjectId): Promise<topicType[]> {
+  async getTopicsByComapareId(
+    id: mongoose.Types.ObjectId,
+  ): Promise<topicType[]> {
     try {
       return await this.topicModel.find({ compareId: id });
     } catch (err) {
@@ -52,33 +85,12 @@ export class TopicService {
     user: CuurentUser,
   ) {
     try {
-      let pageNo = 1; // Current page (this should come from the request)
-      if (page) {
-        pageNo = Number(page);
-      }
-      const limit = 10; // Number of documents per page
-
-      // Get the total count of matching documents
-      const totalCount = await this.topicModel.aggregate([
-        {
-          $match: {
-            userId: user._id, // Filter by userId
-          },
-        },
-        {
-          $count: 'totalCount', // Count the number of documents
-        },
-      ]);
-
-      const count = totalCount.length > 0 ? totalCount[0].totalCount : 0; // Extract count
-      const totalPages = Math.ceil(count / limit);
       let data = await this.topicModel.aggregate([
         {
           $match: {
             userId: user._id, // Filter by userId
           },
         },
-
         {
           $lookup: {
             from: 'messages', // Join with messages collection
@@ -211,6 +223,7 @@ export class TopicService {
             _id: 1,
             type: 1,
             title: 1,
+            fileId: 1,
             inputCost: '$totalInputCost',
             outputCost: '$totalOutputCost',
             lastMessage: '$lastMessageAt',
@@ -219,7 +232,7 @@ export class TopicService {
         },
         {
           $sort: {
-            latMessageAt: -1,
+            lastMessage: -1, // Sort by lastMessage in descending order for newest first
           },
         },
       ]);
@@ -249,6 +262,13 @@ export class TopicService {
           return {
             ...item,
             link: `/en/metrics?metric=${type}&topic=${item?._id}`,
+          };
+        }
+        if (item?.type === 'metrics-database') {
+          let type = item?.title ? item?.title?.split('-')[0] : 'fluency';
+          return {
+            ...item,
+            link: `/en/database?dbId=${item?.fileId}&metric=${type}&metricTopic=${item?._id}`,
           };
         }
         return item; // Return the item as-is if no conditions match

@@ -179,11 +179,14 @@ export class AiServiceService {
     try {
       let body = {
         user_query: messageData?.content,
-        strong_model: messageData?.model1,
-        weak_model: messageData?.model2,
+        strong_model: messageData?.strongModels,
+        weak_model: messageData?.weakModels,
         user_id: String(user._id),
-        routing_threshold: messageData?.routing_threshold,
+        // user_id: "674b0e9a79225f671d038826",
+        topic_id: String(messageData?.topicId),
       };
+
+      console.log('body: ', body);
 
       let response: singleAiChatRes = await this.getAiResRouter(body);
 
@@ -237,6 +240,10 @@ export class AiServiceService {
           return res?.data;
         })
         .catch((err) => {
+          console.log(
+            'err?.response?.data?.detail: ',
+            err?.response?.data?.detail,
+          );
           throw new BadGatewayException(err?.response?.data?.detail);
         });
     } catch (err) {

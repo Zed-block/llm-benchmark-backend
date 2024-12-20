@@ -33,6 +33,18 @@ export class StorageService {
     }
   }
 
+  async delete(path: string) {
+    try {
+      const file = this.storage.bucket(process.env.CLOUD_BUCKET).file(path);
+      await file.delete();
+      console.log(`File ${path} deleted successfully.`);
+      return 'success';
+    } catch (err: any) {
+      console.log('Error while deleting file ' + path + ' - ' + err.message);
+      return { isError: true, message: 'Error while deleting file' };
+    }
+  }
+
   async getTemporaryUrl(path: string): Promise<string> {
     try {
       const file = this.storage.bucket(process.env.CLOUD_BUCKET).file(path);
@@ -45,7 +57,9 @@ export class StorageService {
 
       return url;
     } catch (err: any) {
-      console.error(`Error generating signed URL for file ${path}: ${err.message}`);
+      console.error(
+        `Error generating signed URL for file ${path}: ${err.message}`,
+      );
       throw new Error('Unable to generate signed URL');
     }
   }

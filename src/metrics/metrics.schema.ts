@@ -75,6 +75,9 @@ export class Metrics {
   topicId: mongoose.Types.ObjectId;
 
   @Prop({ required: false })
+  fileId: string;
+
+  @Prop({ required: false })
   totalToken: number;
 
   @Prop({ required: false })

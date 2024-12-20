@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { UserFiles, UserFilesDocument } from './user-files.schema';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { StorageService } from 'src/storage/storage.service';
 import { CuurentUser } from 'src/auth/dto/currentUser.dto';
 
@@ -40,7 +40,25 @@ export class UserFilesService {
           throw new Error(`Failed to upload file: ${file.originalname}`);
         }
       }
-    } catch (err: any) {}
+    } catch (err: any) {
+      throw new BadRequestException(err.message);
+    }
+  }
+
+  async deleteFile(id: string) {
+    try {
+      const file = await this.userFilesModel.findById(new mongoose.Types.ObjectId(id))
+
+      if(!file){
+        throw new BadRequestException("No file exist");
+      }
+
+      this.storageService.delete(file?.path)
+
+      return  await this.userFilesModel.findByIdAndDelete(new mongoose.Types.ObjectId(id))
+    } catch (err: any) {
+      throw new BadRequestException(err.message);
+    }
   }
 
   // Get all prompts
@@ -58,7 +76,7 @@ export class UserFilesService {
     // Find user prompts with filters
     const userfiles = await this.userFilesModel
       .find({ ...filters, userId: user._id })
-      .sort({ createdAt: -1 }) 
+      .sort({ createdAt: -1 })
       .exec();
 
     // Combine results

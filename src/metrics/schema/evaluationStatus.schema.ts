@@ -18,6 +18,9 @@ export class EvaluationStatus extends Document {
   @Prop({ type: Object, required: false })
   error_details: any;
 
+  @Prop({ type: String, required: true })
+  file_id: string;
+
   @Prop({
     type: String,
     enum: ['STARTED', 'COMPLETED', 'ERROR', 'PROCESSING'],

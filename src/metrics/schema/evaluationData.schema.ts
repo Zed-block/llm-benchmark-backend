@@ -15,6 +15,9 @@ export class EvaluationData extends Document {
   @Prop({ type: String, required: true })
   topic_id: string;
 
+  @Prop({ type: String, required: true })
+  file_id: string;
+
   @Prop({ type: Array, default: [] })
   response: any[];
 }

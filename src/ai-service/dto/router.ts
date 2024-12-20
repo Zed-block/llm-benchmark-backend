@@ -2,10 +2,11 @@ import mongoose from 'mongoose';
 
 export class aiRouterChat {
   user_query: string;
-  strong_model: string;
-  weak_model: string;
+  strong_model: string[];
+  weak_model: string[];
   user_id: string;
-  routing_threshold: number;
+  topic_id: string;
+  routing_threshold?: number;
 }
 
 export class singleAiChatRes {

@@ -10,10 +10,25 @@ export class createNewMsgTopic {
   title: string;
   type: string;
   userId: mongoose.Types.ObjectId;
-  model1?: string;
-  model2?: string;
-  provider1?: string;
-  provider2?: string;
-  compareId?: mongoose.Types.ObjectId;
-  compareSide?: string;
+  fileId?: string;
+  model?: string;
+  provider?: string;
+}
+
+export class createNewMsgTopicForCompare {
+  title: string;
+  type: string;
+  userId: mongoose.Types.ObjectId;
+  model: string;
+  provider: string;
+  compareId: mongoose.Types.ObjectId;
+  compareSide: string;
+}
+
+export class createNewMsgTopicForLlmRouter {
+  title: string;
+  type: string;
+  userId: mongoose.Types.ObjectId;
+  strongModels: string[];
+  weakModels: string[];
 }
