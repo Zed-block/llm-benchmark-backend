@@ -181,8 +181,8 @@ export class AiServiceService {
         user_query: messageData?.content,
         strong_model: messageData?.strongModels,
         weak_model: messageData?.weakModels,
-        // user_id: String(user._id),
-        user_id: "674b0e9a79225f671d038826",
+        user_id: String(user._id),
+        // user_id: "674b0e9a79225f671d038826",
         topic_id: String(messageData?.topicId),
       };
 
