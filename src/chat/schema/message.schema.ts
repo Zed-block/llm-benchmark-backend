@@ -30,16 +30,10 @@ export class Message {
   provider: string;
 
   @Prop({ required: false })
-  model1: string;
+  strongModels: string[];
 
   @Prop({ required: false })
-  provider1: string;
-
-  @Prop({ required: false })
-  model2: string;
-
-  @Prop({ required: false })
-  provider2: string;
+  weakModels: string[];
 
   @Prop({ required: false })
   instruction: string;

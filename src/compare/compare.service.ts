@@ -29,13 +29,16 @@ export class CompareService {
 
   async addNewMsg(messageData: singleCompare, user: CuurentUser) {
     try {
+      console.log('messageData: ', messageData);
       if (!messageData?.topicId) {
-        let topic = await this.topicService.createTopic({
+        let topic = await this.topicService.createTopicForCompare({
           type: messageData?.type,
           userId: user?._id,
           title: messageData?.content,
           compareId: new mongoose.Types.ObjectId(messageData?.compareId),
           compareSide: messageData?.compareSide,
+          model: messageData?.model,
+          provider: messageData?.provider,
         });
         messageData.topicId = String(topic._id);
       }
@@ -113,11 +116,10 @@ export class CompareService {
           $group: {
             _id: '$topicId', // Group by selectedModel
             messages: { $push: '$$ROOT' },
-            lastIndex: { $last: '$createdAt' }, // Capture the last index based on createdAt
           },
         },
         {
-          $sort: { 'messages.createdAt': -1 }, // Sort messages by createdAt in descending order
+          $sort: { 'messages.createdAt': -1 },
         },
       ];
 

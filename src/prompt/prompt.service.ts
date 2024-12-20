@@ -95,10 +95,10 @@ export class PromptService {
     // Find user prompts with filters
     const userPrompt = await this.promptModel
       .find({ ...filters, userId: user._id })
+      .sort({ createdAt: 1 })
       .exec();
 
-    // Combine results
-    return [...systemPrompt, ...userPrompt];
+    return [...userPrompt, ...systemPrompt];
   }
   // Get a single prompt by ID
   async findById(id: string): Promise<Prompt> {

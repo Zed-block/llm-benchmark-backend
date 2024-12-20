@@ -4,7 +4,7 @@ import mongoose, { Document } from 'mongoose';
 
 export type PromptDocument = Prompt & Document;
 
-@Schema()
+@Schema({ timestamps: true })
 export class Prompt {
   @Prop({ required: false })
   userId: mongoose.Types.ObjectId;

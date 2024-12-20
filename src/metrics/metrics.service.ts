@@ -30,18 +30,16 @@ export class MetricsService {
 
   async metricCallWithoutDb(messageData: metricsRunInput, user: CuurentUser) {
     try {
-      if (!messageData?.topicId) {
-        let topicBody = {
-          title:
-            messageData?.evaluation_metrice +
-              '-' +
-              messageData?.evaluation_type || 'noType',
-          type: 'metrics',
-          userId: user?._id,
-        };
-        let topic = await this.topicService.createTopic(topicBody);
-        messageData.topicId = String(topic._id);
-      }
+      let topicBody = {
+        title:
+          messageData?.evaluation_metrice +
+            '-' +
+            messageData?.evaluation_type || 'noType',
+        type: 'metrics',
+        userId: user?._id,
+      };
+      let topic = await this.topicService.createTopic(topicBody);
+      messageData.topicId = String(topic._id);
 
       let res: metricChatRes = await this.aiService.getResponseForMetrics(
         messageData,
@@ -123,35 +121,32 @@ export class MetricsService {
 
   async metricCallWithDb(messageData: metricsRunInputForDb, user: CuurentUser) {
     try {
-      if (!messageData?.topicId) {
-        let topicBody = {
-          title:
-            messageData?.evaluation_metrice +
-              '-' +
-              messageData?.evaluation_type || 'noType',
-          type: 'metrics',
-          userId: user?._id,
-        };
-        let topic = await this.topicService.createTopic(topicBody);
-        messageData.topicId = String(topic._id);
-      }
+      let topicBody = {
+        title:
+          messageData?.evaluation_metrice +
+            '-' +
+            messageData?.evaluation_type || 'noType',
+        type: 'metrics-database',
+        userId: user?._id,
+        fileId: messageData?.fileId,
+      };
+      let topic = await this.topicService.createTopic(topicBody);
+      messageData.topicId = String(topic._id);
 
       let file = await this.userFilesModel.findById(
         new mongoose.Types.ObjectId(messageData?.fileId),
       );
 
-      let uuid = uuidv4();
       let updatedData = {
         evaluation_metrice: messageData?.evaluation_metrice,
         evaluation_type: messageData?.evaluation_type,
         dataset_path: file.path,
-        topic_id: uuid,
+        topic_id: messageData?.topicId,
+        file_id: messageData?.fileId,
       };
 
       let res: metricChatRes =
         await this.aiService.getResponseForDatabaseMetrics(updatedData, user);
-
-      console.log('res: ', res);
 
       await this.MetricsModel.create({
         ...messageData,
@@ -161,7 +156,6 @@ export class MetricsService {
       return {
         response: res,
         topic: messageData.topicId,
-        lastRun: uuid,
       };
     } catch (err) {
       console.log(err.message);
@@ -186,6 +180,27 @@ export class MetricsService {
     }
   }
 
+  async getdbMetricsResHistory(
+    metric: string,
+    type: string,
+    dbId: string,
+    user: CuurentUser,
+  ) {
+    try {
+      const dataExist = await this.evaluationStatusModel.findOne({
+        evaluation_metrice: metric,
+        evaluation_type: type,
+        file_id: dbId,
+        userId: user._id,
+      });
+
+      return dataExist;
+    } catch (err) {
+      console.log(err.message);
+      throw new BadGatewayException(err?.message);
+    }
+  }
+
   async getdbMetricsRes(runId: string, user: CuurentUser) {
     try {
       const status = await this.evaluationStatusModel.findOne({
@@ -193,6 +208,34 @@ export class MetricsService {
       });
       if (status?.status === 'COMPLETED') {
         let data = await this.evaluationDataModel.find({ topic_id: runId });
+        let metricRes = await this.MetricsModel.findOne({
+          topicId: new mongoose.Types.ObjectId(String(runId)),
+        });
+
+        if (!metricRes?.response) {
+          let res = [];
+
+          data?.map((item) => {
+            if (item.response && item.response?.length > 0) {
+              if (Array.isArray(item?.response)) {
+                res = [...res, ...item.response];
+              } else {
+                res = [...res, item.response];
+              }
+            }
+          });
+
+          await this.MetricsModel.findOneAndUpdate(
+            {
+              topicId: new mongoose.Types.ObjectId(String(runId)),
+            },
+            {
+              $set: {
+                response: JSON.stringify(res),
+              },
+            },
+          );
+        }
 
         return {
           response: data,
@@ -221,8 +264,7 @@ export class MetricsService {
       }
       return {
         resType: 'ERROR',
-        message:
-          'Error at status',
+        message: 'Error at status',
       };
     } catch (err) {
       console.log(err.message);

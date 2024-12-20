@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  Param,
   ParseFilePipeBuilder,
   Post,
   Query,
@@ -42,4 +44,14 @@ export class UserFilesController {
   ): Promise<UserFiles[]> {
     return this.userFilesService.getUserFiles(user, search);
   }
+  
+  @UseGuards(AuthGuard('jwt'))
+  @Delete(':id')
+  async deleteFile(
+    @Param('id') id: string,
+    @CurrentUser() user: CuurentUser
+  ) {
+    return await this.userFilesService.deleteFile(id);
+  }
+
 }

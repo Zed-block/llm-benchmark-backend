@@ -25,17 +25,16 @@ export class LlmRouterService {
   async addMessage(messageData: askLlmRouterQuestion, user: CuurentUser) {
     try {
       if (!messageData?.topicId) {
-        let topic = await this.topicService.createTopic({
+        let topic = await this.topicService.createTopicFromLlmRouter({
           type: messageData?.type,
           userId: user?._id,
-          model1: messageData?.model1,
-          model2: messageData?.model2,
-          provider1: messageData?.provider1,
-          provider2: messageData?.provider2,
+          strongModels: messageData?.strongModels,
+          weakModels: messageData?.weakModels,
           title: messageData?.content,
         });
         messageData.topicId = String(topic._id);
       }
+
       // Step 1: Save the message to the database
       await this.createChat({
         ...messageData,
@@ -43,6 +42,7 @@ export class LlmRouterService {
         topicId: new mongoose.Types.ObjectId(messageData?.topicId),
         routing_threshold: messageData?.routing_threshold || 0.1,
       });
+
 
       // Step 2: Call the AI service for a delayed response
       const aiResponse = await this.aiService.getResponseForLlmRouter(

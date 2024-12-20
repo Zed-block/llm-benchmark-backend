@@ -22,6 +22,7 @@ export class metricsRunForDb {
   evaluation_metrice: string;
   dataset_path?: string;
   topic_id: string;
+  file_id: string;
 }
 
 export class pointWiseData {
