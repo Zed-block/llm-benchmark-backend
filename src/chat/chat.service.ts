@@ -56,9 +56,15 @@ export class ChatService {
     }
   }
 
-  async action(data: { model: string; action: string }, user: CuurentUser) {
+  async action(
+    data: { model: string; action: string; messageId: string },
+    user: CuurentUser,
+  ) {
     try {
-      console.log('data: ', data);
+      let message = await this.messageModel.findOne({
+        messageId: data.messageId,
+      });
+
       let model = await this.routerModule.findOne({
         strong_model: data?.model,
       });
@@ -70,15 +76,80 @@ export class ChatService {
       }
 
       if (data?.action == 'like') {
+        await this.messageModel.findOneAndUpdate(
+          {
+            messageId: data?.messageId,
+          },
+          {
+            $set: {
+              action: 'like',
+            },
+          },
+        );
+
+        let negative = 0;
+
+        if (message?.action == 'dislike') {
+          negative = 1;
+        }
+
         return await this.routerModule.findByIdAndUpdate(model._id, {
           $set: {
             positive_feedback: model?.positive_feedback + 1,
+            negative_feedback: model?.negative_feedback - negative,
+          },
+        });
+      } else if (data?.action == 'dislike') {
+        await this.messageModel.findOneAndUpdate(
+          {
+            messageId: data?.messageId,
+          },
+          {
+            $set: {
+              action: 'dislike',
+            },
+          },
+        );
+
+        let positive = 0;
+
+        if (message?.action == 'like') {
+          positive = 1;
+        }
+
+        return await this.routerModule.findByIdAndUpdate(model._id, {
+          $set: {
+            positive_feedback: model?.positive_feedback - positive,
+            negative_feedback: model?.negative_feedback + 1,
           },
         });
       } else {
+        await this.messageModel.findOneAndUpdate(
+          {
+            messageId: data?.messageId,
+          },
+          {
+            $set: {
+              action: 'none',
+            },
+          },
+        );
+
+        let positive = 0;
+        let negative = 0;
+
+        if (message?.action == 'dislike') {
+          negative = 1;
+        }
+
+        if (message?.action == 'like') {
+          positive = 1;
+        }
+
         return await this.routerModule.findByIdAndUpdate(model._id, {
           $set: {
-            negative_feedback: model?.negative_feedback + 1,
+            positive_feedback: model?.positive_feedback - positive,
+            negative_feedback: model?.negative_feedback - negative,
           },
         });
       }

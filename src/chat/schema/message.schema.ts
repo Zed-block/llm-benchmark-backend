@@ -73,9 +73,12 @@ export class Message {
 
   @Prop({ required: false })
   routing_threshold: number;
-  
+
   @Prop({ required: false })
   compareQuestionId: string;
+
+  @Prop({ required: false, default: 'none' })
+  action: string;
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);
