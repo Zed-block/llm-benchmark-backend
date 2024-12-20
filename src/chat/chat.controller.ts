@@ -29,7 +29,12 @@ export class ChatController {
     @CurrentUser() user: CuurentUser,
   ): Promise<askQuestionRes> {
     return await this.chatService.ask(chatData, user);
+  }
 
+  @UseGuards(AuthGuard())
+  @Post('/action')
+  async action(@Body() data: any, @CurrentUser() user: CuurentUser) {
+    return await this.chatService.action(data, user);
   }
 
   // ask a new chat message
