@@ -6,11 +6,13 @@ import { AiServiceService } from 'src/ai-service/ai-service.service';
 import { CuurentUser } from 'src/auth/dto/currentUser.dto';
 import { TopicService } from 'src/topic/topic.service';
 import { askQuestion, askQuestionRes } from './dto/addNewMessage';
+import { RoutingModels } from './schema/routing_models.schema';
 
 @Injectable()
 export class ChatService {
   constructor(
     @InjectModel(Message.name) private messageModel: Model<MessageDocument>,
+    @InjectModel(RoutingModels.name) private routerModule: Model<RoutingModels>,
     private readonly aiService: AiServiceService,
     private readonly topicService: TopicService,
   ) {}
@@ -48,6 +50,38 @@ export class ChatService {
       const aiResponse = await this.aiService.getResponse(messageData, user);
 
       return aiResponse;
+    } catch (err) {
+      console.group('error at ask', err);
+      throw new BadGatewayException(err.message);
+    }
+  }
+
+  async action(data: { model: string; action: string }, user: CuurentUser) {
+    try {
+      console.log('data: ', data);
+      let model = await this.routerModule.findOne({
+        strong_model: data?.model,
+      });
+
+      if (!model) {
+        model = await this.routerModule.findOne({
+          weak_model: data?.model,
+        });
+      }
+
+      if (data?.action == 'like') {
+        return await this.routerModule.findByIdAndUpdate(model._id, {
+          $set: {
+            positive_feedback: model?.positive_feedback + 1,
+          },
+        });
+      } else {
+        return await this.routerModule.findByIdAndUpdate(model._id, {
+          $set: {
+            negative_feedback: model?.negative_feedback + 1,
+          },
+        });
+      }
     } catch (err) {
       console.group('error at ask', err);
       throw new BadGatewayException(err.message);
@@ -109,7 +143,6 @@ export class ChatService {
       console.log('ERR', err.Message);
     }
   }
-
 
   // Delete a chat message by ID
   async deleteChatById(chatId: string): Promise<{ deleted: boolean }> {
