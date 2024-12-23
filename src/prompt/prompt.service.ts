@@ -99,7 +99,7 @@ export class PromptService {
     // Find user prompts with filters
     const userPrompt = await this.promptModel
       .find({ ...filters, userId: user._id })
-      .sort({ createdAt: 1 })
+      .sort({ createdAt: -1 })
       .exec();
 
     return userPrompt;
