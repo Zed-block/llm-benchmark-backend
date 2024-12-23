@@ -11,7 +11,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: {
       credentials: true,
-      origin: ['http://localhost:3000', 'http://localhost:8080'],
+      origin: ['http://localhost:3000', 'http://localhost:8080','https://llmbenchmarking-frontend-867300918389.asia-south2.run.app'],
     },
   });
 
