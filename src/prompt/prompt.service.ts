@@ -25,44 +25,48 @@ export class PromptService {
   }
 
   // Create a new prompt
-  async addData(): Promise<void> {
-    const samplePrompts = [
+  async addData(user): Promise<void> {
+    let prompt = [
       {
-        id: 1,
         title: 'Customer Satisfaction',
         description:
           'Evaluate customer satisfaction based on recent interactions',
-        status: 'active' as const,
+        status: 'active',
+        __v: 0,
       },
       {
-        id: 2,
-        title: 'Product Feedback',
-        description: 'Analyze product feedback for improvement opportunities',
-        status: 'active' as const,
+        title: 'Market Trends',
+        description: 'Identify emerging market trends in our industry',
+        status: 'active',
+        __v: 0,
       },
       {
-        id: 3,
         title: 'Employee Engagement',
         description:
           'Assess employee engagement levels within the organization',
-        status: 'inactive' as const,
+        status: 'inactive',
+        __v: 0,
       },
       {
-        id: 4,
-        title: 'Market Trends',
-        description: 'Identify emerging market trends in our industry',
-        status: 'active' as const,
-      },
-      {
-        id: 5,
         title: 'Competitor Analysis',
         description: 'Compare our offerings with those of key competitors',
-        status: 'inactive' as const,
+        status: 'inactive',
+        __v: 0,
+      },
+      {
+        title: 'Product Feedback',
+        description: 'Analyze product feedback for improvement opportunities',
+        status: 'active',
+        __v: 0,
       },
     ];
-    samplePrompts?.forEach((item) => {
-      const newPrompt = new this.promptModel({ ...item });
-      return newPrompt.save();
+
+    prompt?.map(async (item) => {
+      await this.promptModel.create({
+        ...item,
+        userId: user._id,
+        type: 'user_prompt',
+      });
     });
   }
 
@@ -88,9 +92,9 @@ export class PromptService {
     }
 
     // Find system prompts with filters
-    const systemPrompt = await this.promptModel
-      .find({ ...filters, type: 'system_prompt', userId: { $exists: false } })
-      .exec();
+    // const systemPrompt = await this.promptModel
+    //   .find({ ...filters, type: 'system_prompt', userId: { $exists: false } })
+    //   .exec();
 
     // Find user prompts with filters
     const userPrompt = await this.promptModel
@@ -98,11 +102,20 @@ export class PromptService {
       .sort({ createdAt: 1 })
       .exec();
 
-    return [...userPrompt, ...systemPrompt];
+    return userPrompt;
   }
   // Get a single prompt by ID
   async findById(id: string): Promise<Prompt> {
     return this.promptModel.findById(id).exec();
+  }
+
+  // Get a single prompt by ID
+  async updatePrompt(id: string, body): Promise<Prompt> {
+    return this.promptModel
+      .findByIdAndUpdate(id, {
+        $set: body,
+      })
+      .exec();
   }
 
   // Delete a prompt by ID

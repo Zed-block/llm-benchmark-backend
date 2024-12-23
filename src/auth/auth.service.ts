@@ -23,6 +23,8 @@ import mongoose, { Model } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
 import { CuurentUser } from './dto/currentUser.dto';
 import { EmailService } from 'src/email/email.service';
+import { PromptDocument } from 'src/prompt/prompt.schema';
+import { PromptService } from 'src/prompt/prompt.service';
 
 @Injectable()
 export class AuthService {
@@ -30,6 +32,7 @@ export class AuthService {
     private emailService: EmailService,
     private userService: UserService,
     private jwtService: JwtService,
+    private promptService: PromptService,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
   ) {}
 
@@ -142,6 +145,8 @@ export class AuthService {
       const user = await this.userModel.create({
         ...userObj,
       });
+
+      this.promptService.addData(user);
 
       this.verifyEmailRequest(
         `${process.env.FRONTEND_BASE_URL}/${process.env.TOKEN_VERIFICATION}`,

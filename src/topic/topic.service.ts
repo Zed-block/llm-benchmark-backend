@@ -261,7 +261,7 @@ export class TopicService {
           let type = item?.title ? item?.title?.split('-')[0] : 'fluency';
           return {
             ...item,
-            link: `/en/metrics?metric=${type}&topic=${item?._id}`,
+            link: `/en/metrics?metric=${type}&metricTopic=${item?._id}`,
           };
         }
         if (item?.type === 'metrics-database') {
