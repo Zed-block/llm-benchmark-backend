@@ -201,6 +201,19 @@ export class MetricsService {
     }
   }
 
+  async getMetricsRes(metricTopic: string, user: CuurentUser) {
+    try {
+      let data = await this.MetricsModel.findOne({
+        topicId: new mongoose.Types.ObjectId(metricTopic),
+      });
+
+      return data;
+    } catch (err) {
+      console.log(err.message);
+      throw new BadGatewayException(err?.message);
+    }
+  }
+
   async getdbMetricsRes(runId: string, user: CuurentUser) {
     try {
       const status = await this.evaluationStatusModel.findOne({

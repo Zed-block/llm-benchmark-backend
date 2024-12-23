@@ -7,6 +7,7 @@ import {
   Body,
   UseGuards,
   Query,
+  Put,
 } from '@nestjs/common';
 import { PromptService } from './prompt.service';
 import { Prompt } from './/prompt.schema';
@@ -40,6 +41,14 @@ export class PromptController {
   @Get(':id')
   async findById(@Param('id') id: string): Promise<Prompt> {
     return this.promptService.findById(id);
+  }
+
+  @Put(':id')
+  async updatePrompt(
+    @Param('id') id: string,
+    @Body() promptData: Partial<Prompt>,
+  ): Promise<Prompt> {
+    return this.promptService.updatePrompt(id, promptData);
   }
 
   @Delete(':id')

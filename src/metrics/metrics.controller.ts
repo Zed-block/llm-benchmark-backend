@@ -36,6 +36,18 @@ export class MetricsController {
 
   // ask a new metrics
   @UseGuards(AuthGuard('jwt'))
+  @Get('getMetricsRes')
+  async getMetricsRes(
+    @Query('runId') metricTopic: string,
+    @CurrentUser() user: CuurentUser,
+  ) {
+    return await this.metricsService.getMetricsRes(
+      metricTopic,
+      user,
+    );
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Get('getdbMetricsResHistory')
   async getdbMetricsResHistory(
     @Query('metric') metric: string,

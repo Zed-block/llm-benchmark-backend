@@ -8,6 +8,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from 'src/user/schema/user.schema';
 import { UserModule } from 'src/user/user.module';
 import { EmailModule } from 'src/email/email.module';
+import { Prompt, PromptSchema } from 'src/prompt/prompt.schema';
+import { PromptModule } from 'src/prompt/prompt.module';
 
 const passportModule = PassportModule.register({
   defaultStrategy: 'jwt',
@@ -28,8 +30,9 @@ const passportModule = PassportModule.register({
       }),
     }),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    PromptModule,
     UserModule,
-    EmailModule
+    EmailModule,
   ],
   providers: [AuthService],
   controllers: [AuthController],

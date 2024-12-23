@@ -13,6 +13,15 @@ export class StorageKeyService {
 
   async createKey(keyData: Partial<Key>, user): Promise<Key> {
     try {
+      let exist = await this.keyModel.findOne({
+        userId: user._id,
+        models: keyData?.models,
+      });
+
+      if (exist) {
+        return exist;
+      }
+      
       let validate = await this.aiService.validateApiKey({
         api_key: keyData?.apiKey,
         provider: keyData?.provider,
