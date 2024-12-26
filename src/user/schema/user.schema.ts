@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document, ObjectId } from 'mongoose';
 
-
 export type UserDocument = User & Document;
 
 @Schema({ timestamps: true })
@@ -20,6 +19,9 @@ export class User {
 
   @Prop()
   phone: string;
+
+  @Prop({ required: false, default: 'email' })
+  loginType: string;
 
   @Prop({ default: false })
   isEmailVerified: boolean;

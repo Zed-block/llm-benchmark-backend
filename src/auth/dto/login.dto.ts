@@ -22,3 +22,9 @@ export class LoginDto {
 	@IsNotEmpty()
 	checkbox: boolean
 }
+
+export class GoogleLoginDto {
+	@IsString()
+	@IsNotEmpty()
+	token: string
+}

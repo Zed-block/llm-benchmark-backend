@@ -12,7 +12,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { UserService } from '../user/user.service';
-import { LoginDto } from './dto/login.dto';
+import { GoogleLoginDto, LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import { SignUpDto } from './dto/signUp.dto';
@@ -23,7 +23,7 @@ import mongoose, { Model } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
 import { CuurentUser } from './dto/currentUser.dto';
 import { EmailService } from 'src/email/email.service';
-import { PromptDocument } from 'src/prompt/prompt.schema';
+import { OAuth2Client } from 'google-auth-library';
 import { PromptService } from 'src/prompt/prompt.service';
 
 @Injectable()
@@ -85,6 +85,49 @@ export class AuthService {
     }
   }
 
+  async google(dto: GoogleLoginDto, res: Response) {
+    try {
+      const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+      const ticket = await client.verifyIdToken({
+        idToken: dto.token,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+
+      const userDetails = ticket.getPayload();
+
+      let user = await this.userModel.findOne({ email: userDetails.email });
+
+      if (!user) {
+        user = await this.userModel.create({
+          firstName: userDetails.name,
+          lastName: userDetails.family_name,
+          email: userDetails.email,
+          isEmailVerified: userDetails.email_verified,
+          loginType: 'google',
+        });
+      }
+
+      const token = await this.jwtService.signAsync(
+        { userId: user._id },
+        {
+          expiresIn: '365d',
+        },
+      );
+
+      res
+        .cookie('authorization', `Bearer ${token}`, {
+          httpOnly: true,
+          secure: true,
+          maxAge: Date.now() + 10 * 365 * 24 * 60 * 60,
+          sameSite: 'none',
+        })
+        .json({ ...user.toObject(), token });
+    } catch (err: any) {
+      throw new BadRequestException(err.message);
+    }
+  }
+
   async getLoginToken() {}
 
   async authMe(currentUser: CuurentUser, res) {
@@ -122,7 +165,7 @@ export class AuthService {
     if (!user) throw new BadRequestException('Incorrect email');
     if (!user.password)
       throw new BadRequestException(
-        'Yours account does not have any password, please create a new one password with forgot password',
+        'Yours account does not have any password, please create a new password with forgot password',
       );
 
     return await bcrypt.compare(password, user.password);
