@@ -35,31 +35,8 @@ export class CompareService {
     aiRes2: any,
     metrics: string[],
   ) {
-    let messages = await this.messageModel.find({
-      messageId: aiRes?.messageId,
-    });
-
-    let answer = aiRes;
-
-    // Find the index of the current message
-    const currentIndex = messages?.findIndex(
-      (item) => item?.messageId == aiRes.queryId,
-    );
-
-    // Get the previous 5 messages, if they exist
-    const previousMessages =
-      currentIndex !== undefined && currentIndex > 0
-        ? messages.slice(Math.max(currentIndex - 5, 0), currentIndex + 1)
-        : [];
-
-    const mergedMessages = [previousMessages.map((item) => item.content)].join(
-      ', ',
-    );
-
-    //@ts-ignore
-    let msg = answer ? answer?.content : '';
     try {
-      const promises = metrics.map((element) => {
+      const promises = metrics.map(async (element) => {
         let aiData: any = {
           evaluation_metrice: element,
           evaluation_type: 'pairwise',
@@ -77,11 +54,31 @@ export class CompareService {
             element,
           )
         ) {
+          let messages = await this.messageModel.find({
+            topicId: new mongoose.Types.ObjectId(data?.topicId),
+          });
+
+          // Find the index of the current message
+          const currentIndex = messages.findIndex(
+            (item) => item?.messageId == data?.messageId,
+          );
+
+          // Get the previous 5 messages, if they exist
+          const previousMessages =
+            currentIndex !== undefined && currentIndex > 0
+              ? messages.slice(Math.max(currentIndex - 5, 0), currentIndex + 1)
+              : [];
+
+          const mergedMessages = [
+            previousMessages.map((item) => item.content),
+          ].join(', ');
           aiData.custom_metrice_data.history = mergedMessages;
         }
         if (['multi_query_accuracy'].includes(element)) {
-          aiData.custom_metrice_data.response[0] = aiRes2?.content;
-          aiData.custom_metrice_data.response[1] = msg;
+          aiData.custom_metrice_data.response = [
+            aiRes2?.content,
+            aiRes?.content,
+          ];
           aiData.custom_metrice_data.question = data?.content;
         }
         if (['jailbreak'].includes(element)) {
@@ -197,8 +194,8 @@ export class CompareService {
 
   async ask(messageData: compareAsk, user: CuurentUser) {
     try {
-      let msg1: singleCompare;
-      let msg2: singleCompare;
+      let msg1 = messageData?.message1;
+      let msg2 = messageData?.message2;
       if (!messageData?.message1?.compareId) {
         let createCompare = await this.compareModel.create({
           model1: messageData?.message1.model,
@@ -223,12 +220,12 @@ export class CompareService {
       }
 
       let aiResponse1 = this.addNewMsg(
-        msg1,
+        msg1 as singleCompare,
         user,
         messageData?.submitType == 'evaluate' ? 'started' : 'notStarted',
       );
       let aiResponse2 = this.addNewMsg(
-        msg2,
+        msg2 as singleCompare,
         user,
         messageData?.submitType == 'evaluate' ? 'started' : 'notStarted',
       );
@@ -237,7 +234,7 @@ export class CompareService {
 
       if (messageData?.submitType == 'evaluate') {
         this.runEvaluvation(
-          msg1,
+          msg1 as singleCompare,
           user,
           newData[0],
           newData[1],

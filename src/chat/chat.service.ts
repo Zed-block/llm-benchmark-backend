@@ -28,7 +28,6 @@ export class ChatService {
       topicId: new mongoose.Types.ObjectId(data?.topicId),
     });
 
-
     // Find the index of the current message
     const currentIndex = messages.findIndex(
       (item) => item?.messageId == data?.messageId,
@@ -40,11 +39,9 @@ export class ChatService {
         ? messages.slice(Math.max(currentIndex - 5, 0), currentIndex)
         : [];
 
-
     const mergedMessages = previousMessages
       .map((item) => item.content)
       .join(', ');
-
 
     try {
       const promises = metrics.map((element) => {
@@ -338,6 +335,8 @@ export class ChatService {
   async getEvalutionData(data: EvalutionRun, user, metrics: string[], message) {
     try {
       console.log('data: ', data);
+
+      console.log('metrics; ', metrics);
       const promises = metrics.map((element) => {
         let aiData: any = {
           evaluation_metrice: element,
@@ -362,8 +361,10 @@ export class ChatService {
           aiData.custom_metrice_data.history = data?.history;
         }
         if (['multi_query_accuracy'].includes(element)) {
-          aiData.custom_metrice_data.response[0] = data?.response;
-          aiData.custom_metrice_data.response[1] = data.response2;
+          aiData.custom_metrice_data.response = [
+            data?.response,
+            data.response2,
+          ];
           aiData.custom_metrice_data.question = data?.question;
         }
         if (['jailbreak'].includes(element)) {
@@ -374,6 +375,8 @@ export class ChatService {
           aiData.custom_metrice_data.context = data?.context;
         }
         try {
+          console.log('aiData: ', aiData);
+
           return this.aiService.getResponseForMetrics(aiData, user);
         } catch (err) {
           console.error('Error at metrics:', err);
