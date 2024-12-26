@@ -9,5 +9,5 @@ export class askLlmRouterQuestion {
   strongModels: string[];
   weakModels: string[];
   topicId?: string;
-  routing_threshold?: number;
+  routingCritiria: string;
 }

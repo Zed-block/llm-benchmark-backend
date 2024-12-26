@@ -10,7 +10,7 @@ export class askNewQuestionForLlmRouter {
   type: string;
   contentType: string;
   topicId: mongoose.Types.ObjectId;
-  routing_threshold: number;
+  routingCritiria: string;
 }
 
 export class askNewQuestionForCompare {

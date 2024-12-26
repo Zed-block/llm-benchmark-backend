@@ -40,7 +40,7 @@ export class LlmRouterService {
         ...messageData,
         userId: user._id,
         topicId: new mongoose.Types.ObjectId(messageData?.topicId),
-        routing_threshold: messageData?.routing_threshold || 0.1,
+        routingCritiria: messageData?.routingCritiria,
       });
 
 
@@ -50,7 +50,7 @@ export class LlmRouterService {
           ...messageData,
           userId: user?._id,
           topicId: new mongoose.Types.ObjectId(messageData?.topicId),
-          routing_threshold: messageData?.routing_threshold || 0.1,
+          routingCritiria: messageData?.routingCritiria,
         },
         user,
       );

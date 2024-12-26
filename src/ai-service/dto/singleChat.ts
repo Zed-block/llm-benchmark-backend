@@ -5,6 +5,7 @@ export class singleAiChat {
   user_query: string;
   model_name: string;
   user_id: string;
+  temperature: number;
 }
 
 export class singleAiChatRes {

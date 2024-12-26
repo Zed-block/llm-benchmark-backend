@@ -11,7 +11,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { MetricsService } from './metrics.service';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { CuurentUser } from 'src/auth/dto/currentUser.dto';
-import { metricsRun } from './dto/ask';
+import { metricsRun, metricsRunInput, metricsRunInputForDb } from './dto/ask';
 
 @Controller('metrics')
 export class MetricsController {
@@ -19,9 +19,22 @@ export class MetricsController {
 
   // ask a new metrics
   @UseGuards(AuthGuard('jwt'))
-  @Post('ask')
-  async ask(@Body() chatData: metricsRun, @CurrentUser() user: CuurentUser) {
-    return await this.metricsService.ask(chatData, user);
+  @Post('askMetrics')
+  async metricCallWithoutDb(
+    @Body() chatData: metricsRunInput,
+    @CurrentUser() user: CuurentUser,
+  ) {
+    return await this.metricsService.metricCallWithoutDb(chatData, user);
+  }
+
+  // ask a new metrics
+  @UseGuards(AuthGuard('jwt'))
+  @Post('metricCallWithDb')
+  async metricCallWithDb(
+    @Body() chatData: metricsRunInputForDb,
+    @CurrentUser() user: CuurentUser,
+  ) {
+    return await this.metricsService.metricCallWithDb(chatData, user);
   }
 
   // ask a new metrics
@@ -41,10 +54,7 @@ export class MetricsController {
     @Query('runId') metricTopic: string,
     @CurrentUser() user: CuurentUser,
   ) {
-    return await this.metricsService.getMetricsRes(
-      metricTopic,
-      user,
-    );
+    return await this.metricsService.getMetricsRes(metricTopic, user);
   }
 
   @UseGuards(AuthGuard('jwt'))

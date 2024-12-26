@@ -21,6 +21,9 @@ export class Topic {
   model: string;
 
   @Prop({ required: false })
+  temperature: number;
+
+  @Prop({ required: false })
   strongModels: string[];
 
   @Prop({ required: false })

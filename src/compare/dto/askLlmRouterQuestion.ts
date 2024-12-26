@@ -1,12 +1,16 @@
 import mongoose from 'mongoose';
 
 export class compareAsk {
+  submitType: string;
+  selectedMetrics?: string[];
+  context?: string[];
   message1: {
     messageId: string;
     content: string;
     role: string;
     type: string;
     contentType: string;
+    temperature: number;
     instruction: string;
     model: string;
     provider: string;
@@ -21,6 +25,7 @@ export class compareAsk {
     role: string;
     type: string;
     contentType: string;
+    temperature: number;
     instruction: string;
     model: string;
     provider: string;
@@ -37,6 +42,7 @@ export class singleCompare {
   role: string;
   type: string;
   contentType: string;
+  temperature: number;
   instruction: string;
   model: string;
   provider: string;
@@ -44,6 +50,22 @@ export class singleCompare {
   compareId: string;
   compareQuestionId: string;
   compareSide: string;
+}
+
+export class compareRunMetrics {
+  messageId: string;
+  content: string;
+  role: string;
+  type: string;
+  contentType: string;
+  temperature: number;
+  instruction: string;
+  model: string;
+  provider: string;
+  topicId?: string;
+  compareId: string;
+  compareQuestionId: string;
+  context?: string[];
 }
 
 export class compareRes {
@@ -56,6 +78,7 @@ export class compareRes {
     instruction: string;
     model: string;
     topicId: mongoose.Types.ObjectId;
+    temperature: number;
   };
   message2: {
     messageId: string;
@@ -66,5 +89,6 @@ export class compareRes {
     instruction: string;
     model: string;
     topicId: mongoose.Types.ObjectId;
+    temperature: number;
   };
 }

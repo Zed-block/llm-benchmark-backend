@@ -17,6 +17,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { CuurentUser } from 'src/auth/dto/currentUser.dto';
 import { askQuestion, askQuestionRes } from './dto/addNewMessage';
+import { EvalutionRun } from './dto/evaluation';
 
 @Controller('chat')
 export class ChatController {
@@ -35,6 +36,24 @@ export class ChatController {
   @Post('/action')
   async action(@Body() data: any, @CurrentUser() user: CuurentUser) {
     return await this.chatService.action(data, user);
+  }
+
+  @UseGuards(AuthGuard())
+  @Post('/startEvaluation')
+  async startEvaluation(
+    @Body() data: EvalutionRun,
+    @CurrentUser() user: CuurentUser,
+  ) {
+    return await this.chatService.startEvaluation(data, user);
+  }
+
+  @UseGuards(AuthGuard())
+  @Get('/getMessageEvalutionStatus')
+  async getMessageEvalutionStatus(
+    @Query('messageId') messageId: string,
+    @CurrentUser() user: CuurentUser,
+  ) {
+    return await this.chatService.getMessageEvalutionStatus(messageId, user);
   }
 
   // ask a new chat message

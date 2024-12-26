@@ -47,13 +47,16 @@ export class AiServiceService {
   async getResponse(
     messageData: askQuestion,
     user: CuurentUser,
+    evaluateStatus,
   ): Promise<chatReply> {
     try {
+      console.log('evaluateStatus; ', evaluateStatus);
       let body = {
         system_prompt: messageData?.instruction,
         user_query: messageData?.content,
         model_name: messageData?.model,
         user_id: String(user?._id),
+        temperature: messageData?.temperature,
       };
 
       let response: singleAiChatRes = await this.getAiRes(body);
@@ -85,6 +88,8 @@ export class AiServiceService {
           ? response.metadata?.cost.output_cost
           : 0,
         timeTaken: response?.total_time ? response.total_time : 0,
+        temperature: messageData?.temperature,
+        evaluateStatus: evaluateStatus,
       });
 
       return message;
@@ -97,6 +102,7 @@ export class AiServiceService {
   async getResponseForComape(
     messageData: askQuestionForCompare,
     user: CuurentUser,
+    evaluateStatus: string,
   ): Promise<chatReplyForCompare> {
     try {
       let body = {
@@ -104,6 +110,7 @@ export class AiServiceService {
         user_query: messageData?.content,
         model_name: messageData?.model,
         user_id: String(user?._id),
+        temperature: messageData?.temperature,
       };
 
       let response: singleAiChatRes = await this.getAiRes(body);
@@ -137,6 +144,8 @@ export class AiServiceService {
           ? response.metadata?.cost.output_cost
           : 0,
         timeTaken: response?.total_time ? response.total_time : 0,
+        temperature: messageData?.temperature,
+        evaluateStatus: evaluateStatus,
       });
 
       return message;
@@ -182,8 +191,8 @@ export class AiServiceService {
         strong_model: messageData?.strongModels,
         weak_model: messageData?.weakModels,
         user_id: String(user._id),
-        // user_id: "674b0e9a79225f671d038826",
         topic_id: String(messageData?.topicId),
+        routing_criteria: messageData?.routingCritiria,
       };
 
       console.log('body: ', body);
@@ -215,6 +224,7 @@ export class AiServiceService {
           ? response.metadata?.cost.output_cost
           : 0,
         timeTaken: response?.total_time ? response.total_time : 0,
+        routingCritiria: messageData?.routingCritiria,
       });
 
       return message;
@@ -569,6 +579,7 @@ export class AiServiceService {
             headers: {
               'Content-Type': 'application/json', // Add headers if needed
             },
+            timeout: 180000,
           },
         )
         .then((res) => {
