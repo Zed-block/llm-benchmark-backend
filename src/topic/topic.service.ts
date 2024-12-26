@@ -239,7 +239,7 @@ export class TopicService {
 
       const updatedData = data?.map((item) => {
         if (item?.type === 'chat') {
-          return { ...item, link: `/en/chat?topicId=${item._id}` };
+          return { ...item, link: `/en/evaluation?topicId=${item._id}` };
         }
         if (item?.type === 'llmrouter') {
           return { ...item, link: `/en/llmrouter?topicId=${item._id}` };
@@ -254,7 +254,7 @@ export class TopicService {
             ) || item.compareDetails?.[1];
           return {
             ...item,
-            link: `/en/chat?compare=true&compareId=${item?.compareId || ''}&topic1=${topic1?._id}&topic2=${topic2?._id}`,
+            link: `/en/evaluation?compare=true&compareId=${item?.compareId || ''}&topic1=${topic1?._id}&topic2=${topic2?._id}`,
           };
         }
         if (item?.type === 'metrics') {
