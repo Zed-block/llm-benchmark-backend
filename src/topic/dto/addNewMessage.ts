@@ -9,6 +9,7 @@ export class topicType {
 export class createNewMsgTopic {
   title: string;
   type: string;
+  temperature?: number;
   userId: mongoose.Types.ObjectId;
   fileId?: string;
   model?: string;
@@ -21,6 +22,7 @@ export class createNewMsgTopicForCompare {
   userId: mongoose.Types.ObjectId;
   model: string;
   provider: string;
+  temperature: number;
   compareId: mongoose.Types.ObjectId;
   compareSide: string;
 }

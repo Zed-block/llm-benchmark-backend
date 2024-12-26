@@ -7,6 +7,7 @@ import { TopicService } from 'src/topic/topic.service';
 import {
   compareAsk,
   compareRes,
+  compareRunMetrics,
   singleCompare,
 } from './dto/askLlmRouterQuestion';
 import { CuurentUser } from 'src/auth/dto/currentUser.dto';
@@ -27,7 +28,133 @@ export class CompareService {
     return newChat.save();
   }
 
-  async addNewMsg(messageData: singleCompare, user: CuurentUser) {
+  async runEvaluvation(
+    data: compareRunMetrics,
+    user,
+    aiRes: any,
+    aiRes2: any,
+    metrics: string[],
+  ) {
+    try {
+      const promises = metrics.map(async (element) => {
+        let aiData: any = {
+          evaluation_metrice: element,
+          evaluation_type: 'pairwise',
+          custom_metrice_data: {
+            prompt: data?.content,
+            response: aiRes?.content,
+            baseline_model_response: aiRes2?.content,
+          },
+          response_model_name: data?.model,
+          baseline_model_name: aiRes2?.model,
+        };
+
+        if (
+          ['multi_turn_chat_quality', 'multi_turn_chat_safety'].includes(
+            element,
+          )
+        ) {
+          let messages = await this.messageModel.find({
+            topicId: new mongoose.Types.ObjectId(data?.topicId),
+          });
+
+          // Find the index of the current message
+          const currentIndex = messages.findIndex(
+            (item) => item?.messageId == data?.messageId,
+          );
+
+          // Get the previous 5 messages, if they exist
+          const previousMessages =
+            currentIndex !== undefined && currentIndex > 0
+              ? messages.slice(Math.max(currentIndex - 5, 0), currentIndex + 1)
+              : [];
+
+          const mergedMessages = [
+            previousMessages.map((item) => item.content),
+          ].join(', ');
+          aiData.custom_metrice_data.history = mergedMessages;
+        }
+        if (['multi_query_accuracy'].includes(element)) {
+          aiData.custom_metrice_data.response = [
+            aiRes2?.content,
+            aiRes?.content,
+          ];
+          aiData.custom_metrice_data.question = data?.content;
+        }
+        if (['jailbreak'].includes(element)) {
+          aiData.custom_metrice_data.question = data?.content;
+        }
+        if (['LLMContexRecall'].includes(element)) {
+          aiData.custom_metrice_data.question = data?.content;
+          aiData.custom_metrice_data.context = data?.context;
+        }
+        try {
+          return this.aiService.getResponseForMetrics(aiData, user);
+        } catch (err) {
+          console.error('Error at metrics:', err);
+          // Handle the error as needed, maybe return a default response
+          return null;
+        }
+      });
+
+      // Wait for all promises to resolve and store the results
+      const results = await Promise.all(promises);
+
+      console.log('results: ', results);
+
+      let evaluateRes: Record<string, any> = {};
+
+      results.map((result) => {
+        console.log('resu: ', result);
+
+        // Check if the response is either an array or an object
+        if (result?.response) {
+          if (Array.isArray(result.response)) {
+            // If response is an array, loop through each item
+            result.response.forEach((item) => {
+              if (item && typeof item === 'object') {
+                // If item is an object, extract key-value pairs
+                const keys = Object.keys(item);
+                keys.forEach((key) => {
+                  if (key) {
+                    evaluateRes = { [key]: item[key], ...evaluateRes };
+                  }
+                });
+              }
+            });
+          } else if (typeof result.response === 'object') {
+            // If response is a single object, extract key-value pairs directly
+            const keys = Object.keys(result.response);
+            keys.forEach((key) => {
+              if (key) {
+                evaluateRes = { [key]: result.response[key], ...evaluateRes };
+              }
+            });
+          }
+        }
+      });
+
+      let msges = await this.messageModel.updateMany(
+        { role: 'assistant', compareId: aiRes.compareId },
+        {
+          $set: {
+            evaluateStatus: evaluateRes ? 'completed' : 'error',
+            evaluateRes: evaluateRes,
+          },
+        },
+      );
+      console.log('msges; ', msges);
+      return msges;
+    } catch (err) {
+      throw new BadGatewayException(err.message);
+    }
+  }
+
+  async addNewMsg(
+    messageData: singleCompare,
+    user: CuurentUser,
+    evaluateStatus: string,
+  ) {
     try {
       console.log('messageData: ', messageData);
       if (!messageData?.topicId) {
@@ -39,6 +166,7 @@ export class CompareService {
           compareSide: messageData?.compareSide,
           model: messageData?.model,
           provider: messageData?.provider,
+          temperature: messageData?.temperature,
         });
         messageData.topicId = String(topic._id);
       }
@@ -54,6 +182,7 @@ export class CompareService {
       const aiResponse = await this.aiService.getResponseForComape(
         messageData,
         user,
+        evaluateStatus,
       );
 
       return aiResponse;
@@ -65,6 +194,8 @@ export class CompareService {
 
   async ask(messageData: compareAsk, user: CuurentUser) {
     try {
+      let msg1 = messageData?.message1;
+      let msg2 = messageData?.message2;
       if (!messageData?.message1?.compareId) {
         let createCompare = await this.compareModel.create({
           model1: messageData?.message1.model,
@@ -76,17 +207,42 @@ export class CompareService {
         });
         messageData.message1.compareId = String(createCompare._id);
         messageData.message2.compareId = String(createCompare._id);
+
+        msg1 = {
+          ...messageData?.message1,
+          compareId: String(createCompare._id),
+        };
+
+        msg2 = {
+          ...messageData?.message2,
+          compareId: String(createCompare._id),
+        };
       }
 
-      //@ts-ignore
-      let aiResponse1 = await this.addNewMsg(messageData?.message1, user);
-      //@ts-ignore
-      let aiResponse2 = await this.addNewMsg(messageData?.message2, user);
+      let aiResponse1 = this.addNewMsg(
+        msg1 as singleCompare,
+        user,
+        messageData?.submitType == 'evaluate' ? 'started' : 'notStarted',
+      );
+      let aiResponse2 = this.addNewMsg(
+        msg2 as singleCompare,
+        user,
+        messageData?.submitType == 'evaluate' ? 'started' : 'notStarted',
+      );
 
-      console.log('aiResponse1: ', aiResponse1);
-      console.log('aiResponse2: ', aiResponse2);
+      let newData = await Promise.all([aiResponse1, aiResponse2]);
 
-      return { message1: aiResponse1, message2: aiResponse2 };
+      if (messageData?.submitType == 'evaluate') {
+        this.runEvaluvation(
+          msg1 as singleCompare,
+          user,
+          newData[0],
+          newData[1],
+          messageData?.selectedMetrics,
+        );
+      }
+
+      return { message1: newData[0], message2: newData[1] };
     } catch (err) {
       console.log('ere', err.message);
       throw new BadGatewayException(err);

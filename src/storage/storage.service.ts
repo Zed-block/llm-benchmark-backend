@@ -63,4 +63,20 @@ export class StorageService {
       throw new Error('Unable to generate signed URL');
     }
   }
+
+  async getDownloadableUrlByPath(
+    filePath: string,
+    expiresIn: number = 60,
+  ): Promise<string> {
+    try {
+      const file = await this.storage
+        .bucket(process.env.CLOUD_BUCKET)
+        .file(filePath);
+
+      console.log('file; ', file);
+      return '';
+    } catch (error) {
+      throw new Error(`Unable to generate signed URL: ${error.message}`);
+    }
+  }
 }

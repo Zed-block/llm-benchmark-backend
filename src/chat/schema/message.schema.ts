@@ -79,6 +79,15 @@ export class Message {
 
   @Prop({ required: false, default: 'none' })
   action: string;
+
+  @Prop({ required: false, default: 'notStarted' })
+  evaluateStatus: string;
+
+  @Prop({ required: false })
+  routingCritiria: string;
+
+  @Prop({ required: false, type: Object })
+  evaluateRes: Object;
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);

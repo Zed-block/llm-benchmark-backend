@@ -7,10 +7,14 @@ export class askQuestion {
   type: string;
   contentType: string;
   instruction: string;
+  temperature: number;
   provider: string;
   model: string;
-  temperature?: number;
   topicId?: string;
+  submitType: string;
+  evaluateStatus: string;
+  selectedMetrics?: string[];
+  context?: string[];
 }
 
 export class askQuestionForCompare {
@@ -22,7 +26,7 @@ export class askQuestionForCompare {
   instruction: string;
   provider: string;
   model: string;
-  temperature?: number;
+  temperature: number;
   topicId?: string;
   compareId: string;
   compareQuestionId: string;
