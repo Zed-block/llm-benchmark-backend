@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
-import { LoginDto } from './dto/login.dto';
+import { GoogleLoginDto, LoginDto } from './dto/login.dto';
 import { SignUpDto } from './dto/signUp.dto';
 import { CurrentUser } from './current-user.decorator';
 import { AuthGuard } from '@nestjs/passport';
@@ -31,6 +31,14 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     return await this.authService.signInWithEmail(dto, res);
+  }
+
+  @Post('/google')
+  async google(
+    @Body() dto: GoogleLoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return await this.authService.google(dto, res);
   }
 
   @Post('/resendemail/:email')
