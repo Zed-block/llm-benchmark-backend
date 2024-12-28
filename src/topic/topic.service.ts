@@ -268,7 +268,7 @@ export class TopicService {
           let type = item?.title ? item?.title?.split('-')[0] : 'fluency';
           return {
             ...item,
-            link: `/en/database?dbId=${item?.fileId}&metric=${type}&metricTopic=${item?._id}`,
+            link: `/en/dataset?dbId=${item?.fileId}&metric=${type}&metricTopic=${item?._id}`,
           };
         }
         return item; // Return the item as-is if no conditions match

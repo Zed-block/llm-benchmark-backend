@@ -89,7 +89,7 @@ export class CompareService {
           aiData.custom_metrice_data.context = data?.context;
         }
         try {
-          return this.aiService.getResponseForMetrics(aiData, user);
+          return this.aiService.getResponseForMetrics(aiData, user, true);
         } catch (err) {
           console.error('Error at metrics:', err);
           // Handle the error as needed, maybe return a default response

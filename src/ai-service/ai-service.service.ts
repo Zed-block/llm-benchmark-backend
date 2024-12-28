@@ -548,6 +548,7 @@ export class AiServiceService {
   async getResponseForMetrics(
     messageData: metricsRun,
     user: CuurentUser,
+    throwErr = false,
   ): Promise<any> {
     try {
       let validateData = await this.validateMetricsData(messageData);
@@ -587,10 +588,46 @@ export class AiServiceService {
         })
         .catch((err) => {
           console.log('err?.response', err?.response?.data);
-          throw new BadGatewayException(err?.response?.data?.detail);
+          if (!throwErr) {
+            throw new BadGatewayException(err?.response?.data?.detail);
+          }
+          let errorDetail = err?.response?.data?.detail || null;
+          if (errorDetail) {
+            try {
+              // Parse the error detail safely
+              let parsedError =
+                JSON.parse(errorDetail.Error || errorDetail) || errorDetail;
+
+              console.log('parsedError: ', parsedError);
+              return {
+                response: {
+                  [`${messageData.evaluation_metrice}/error`]: parsedError,
+                },
+              };
+            } catch (parseErr) {
+              // Return as is if parsing fails
+              return {
+                response: {
+                  [`${messageData.evaluation_metrice}/error`]: errorDetail,
+                },
+              };
+            }
+          } else {
+            return {
+              response: {
+                [`${messageData.evaluation_metrice}/error`]:
+                  err?.response?.data || 'Unknown error',
+              },
+            };
+          }
         });
     } catch (err) {
-      throw new BadGatewayException(err);
+      if (!throwErr) {
+        throw new BadGatewayException(err);
+      } else {
+        console.log('err; ', err);
+        return err;
+      }
     }
   }
 
