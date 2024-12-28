@@ -72,7 +72,7 @@ export class ChatService {
         }
 
         try {
-          return this.aiService.getResponseForMetrics(aiData, user);
+          return this.aiService.getResponseForMetrics(aiData, user, true);
         } catch (err) {
           console.error('Error at metrics:', err);
           // Handle the error as needed, maybe return a default response
@@ -89,7 +89,7 @@ export class ChatService {
       let evaluateRes: Record<string, any> = {};
 
       results.map((result) => {
-        console.log('resu: ', result);
+        console.log('resu: ', result, typeof result);
 
         // Check if the response is either an array or an object
         if (result?.response) {
@@ -377,7 +377,7 @@ export class ChatService {
         try {
           console.log('aiData: ', aiData);
 
-          return this.aiService.getResponseForMetrics(aiData, user);
+          return this.aiService.getResponseForMetrics(aiData, user, true);
         } catch (err) {
           console.error('Error at metrics:', err);
           // Handle the error as needed, maybe return a default response
@@ -388,6 +388,7 @@ export class ChatService {
       // Wait for all promises to resolve and store the results
       const results = await Promise.all(promises);
 
+      console.log('results; ', results);
       let evaluateRes: Record<string, any> = {};
 
       results.map((result) => {
