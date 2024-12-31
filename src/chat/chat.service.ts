@@ -169,7 +169,10 @@ export class ChatService {
           userId: user?._id,
           model: messageData?.model,
           provider: messageData?.provider,
-          title: messageData?.content,
+          title:
+            messageData?.content || files?.length > 0
+              ? 'image-query'
+              : 'unknown',
           temperature: messageData?.temperature,
         };
         let topic = await this.topicService.createTopic(topicBody);
