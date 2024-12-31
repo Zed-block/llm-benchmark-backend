@@ -184,7 +184,9 @@ export class CompareService {
         let topic = await this.topicService.createTopicForCompare({
           type: messageData?.type,
           userId: user?._id,
-          title: messageData?.content,
+          title: messageData?.content || paths?.length > 0
+          ? 'image-query'
+          : 'unknown',
           compareId: new mongoose.Types.ObjectId(messageData?.compareId),
           compareSide: messageData?.compareSide,
           model: messageData?.model,
@@ -267,7 +269,7 @@ export class CompareService {
       }
 
       let paths: string[] = [];
-      
+
       if (files && files?.length > 0) {
         let fileUpload = await this.addFile(files, user);
         msg1.images = fileUpload.fileIds;
