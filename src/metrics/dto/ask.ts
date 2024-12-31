@@ -8,6 +8,7 @@ import {
 
 export class metricsRun {
   response_model_name?: string;
+  judge_model?: string;
   model_name?: string;
   response_model_provider?: string;
   evaluation_type?: string;
@@ -19,6 +20,7 @@ export class metricsRun {
 
 export class metricsRunForDb {
   evaluation_type: string;
+  judge_model: string;
   evaluation_metrice: string;
   dataset_path?: string;
   topic_id: string;
@@ -27,6 +29,7 @@ export class metricsRunForDb {
 
 export class pointWiseData {
   response_model_name?: string;
+  judge_model: string;
   response_model_provider?: string;
   evaluation_type: string;
   evaluation_metrice: string;
@@ -35,6 +38,7 @@ export class pointWiseData {
 
 export class pairWiseData {
   response_model_name?: string;
+  judge_model: string;
   response_model_provider?: string;
   evaluation_type: string;
   evaluation_metrice: string;
@@ -62,6 +66,7 @@ export class multiqueryaccuracyDataType {
 
 export class metricsRunInput {
   response_model_name?: string;
+  judge_model: string;
   model_name?: string;
   response_model_provider?: string;
   evaluation_type?: string;
@@ -76,6 +81,7 @@ export class metricsRunInput {
 
 export class metricsRunInputForDb {
   evaluation_type: string;
+  judge_model: string;
   evaluation_metrice: string;
   dataset_path?: string;
   fileId: string;

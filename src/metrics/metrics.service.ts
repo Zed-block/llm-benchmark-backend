@@ -138,6 +138,7 @@ export class MetricsService {
       );
 
       let updatedData = {
+        judge_model: messageData?.judge_model,
         evaluation_metrice: messageData?.evaluation_metrice,
         evaluation_type: messageData?.evaluation_type,
         dataset_path: file.path,

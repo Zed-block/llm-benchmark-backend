@@ -10,6 +10,9 @@ import {
   UseGuards,
   Query,
   Get,
+  UseInterceptors,
+  UploadedFiles,
+  ParseFilePipeBuilder,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { Message } from './schema/message.schema';
@@ -18,18 +21,24 @@ import { CurrentUser } from 'src/auth/current-user.decorator';
 import { CuurentUser } from 'src/auth/dto/currentUser.dto';
 import { askQuestion, askQuestionRes } from './dto/addNewMessage';
 import { EvalutionRun } from './dto/evaluation';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('chat')
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
   // ask a new chat message
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard('jwt'))
   @Post('')
+  @UseInterceptors(FilesInterceptor('files', 6, {
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max file size
+  }))
   async ask(
+    @UploadedFiles(new ParseFilePipeBuilder().build({ fileIsRequired: false }))
+    files: any[],
     @Body() chatData: askQuestion,
     @CurrentUser() user: CuurentUser,
-  ): Promise<askQuestionRes> {
-    return await this.chatService.ask(chatData, user);
+  ): Promise<any> {
+    return await this.chatService.ask(chatData, user, files);
   }
 
   @UseGuards(AuthGuard())

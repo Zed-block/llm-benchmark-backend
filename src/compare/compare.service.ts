@@ -6,20 +6,25 @@ import { Message, MessageDocument } from 'src/chat/schema/message.schema';
 import { TopicService } from 'src/topic/topic.service';
 import {
   compareAsk,
+  compareAskFromData,
   compareRes,
   compareRunMetrics,
   singleCompare,
 } from './dto/askLlmRouterQuestion';
 import { CuurentUser } from 'src/auth/dto/currentUser.dto';
 import { Compare, CompareDocument } from './compare.schema';
+import { UserFiles, UserFilesDocument } from 'src/user-files/user-files.schema';
+import { StorageService } from 'src/storage/storage.service';
 
 @Injectable()
 export class CompareService {
   constructor(
     @InjectModel(Message.name) private messageModel: Model<MessageDocument>,
     @InjectModel(Compare.name) private compareModel: Model<CompareDocument>,
+    @InjectModel(UserFiles.name) private userFiles: Model<UserFilesDocument>,
     private readonly aiService: AiServiceService,
     private readonly topicService: TopicService,
+    private readonly storageService: StorageService,
   ) {}
 
   // Create a new chat message
@@ -150,10 +155,28 @@ export class CompareService {
     }
   }
 
+  async uploadFiles(file, user, path) {
+    try {
+      const newFile = {
+        userId: user._id,
+        fileName: file.originalname,
+        path: path,
+        type: file.mimetype,
+        fileFrom: 'chat',
+      };
+
+      this.storageService.save(path, file?.buffer);
+      return await this.userFiles.create(newFile);
+    } catch (err) {
+      throw new BadGatewayException(err.message);
+    }
+  }
+
   async addNewMsg(
     messageData: singleCompare,
     user: CuurentUser,
     evaluateStatus: string,
+    paths?: any,
   ) {
     try {
       console.log('messageData: ', messageData);
@@ -171,6 +194,8 @@ export class CompareService {
         messageData.topicId = String(topic._id);
       }
 
+      console.log('messageData 2: ', messageData);
+
       await this.createChat({
         ...messageData,
         userId: user._id,
@@ -183,6 +208,7 @@ export class CompareService {
         messageData,
         user,
         evaluateStatus,
+        paths,
       );
 
       return aiResponse;
@@ -192,42 +218,74 @@ export class CompareService {
     }
   }
 
-  async ask(messageData: compareAsk, user: CuurentUser) {
+  async addFile(files, user) {
     try {
-      let msg1 = messageData?.message1;
-      let msg2 = messageData?.message2;
-      if (!messageData?.message1?.compareId) {
+      const paths: string[] = [];
+      const fileIds: mongoose.Types.ObjectId[] = [];
+
+      if (files) {
+        const uploadPromises = files.map(async (file) => {
+          const path = `${user._id}/${new Date().toISOString()}/${file?.originalname}`;
+
+          const res: any = await this.uploadFiles(file, user, path); // Ensure the upload completes before proceeding
+
+          fileIds.push(res._id);
+
+          let url = await this.storageService.getTemporaryUrl(res?.path);
+          paths.push(url); // Store the URL if needed
+        });
+
+        await Promise.all(uploadPromises);
+
+      }
+
+      return {
+        fileIds,
+        paths,
+      };
+    } catch (err) {
+      console.log('ere', err.message);
+      throw new BadGatewayException(err);
+    }
+  }
+
+  async ask(messageData: compareAskFromData, user: CuurentUser, files?: any) {
+    try {
+      let msg1 = JSON.parse(messageData?.message1);
+      let msg2 = JSON.parse(messageData?.message2);
+      if (!JSON.parse(messageData?.message1)?.compareId) {
         let createCompare = await this.compareModel.create({
-          model1: messageData?.message1.model,
-          model2: messageData?.message2.model,
-          provider1: messageData?.message1.provider,
-          provider2: messageData?.message2.provider,
-          title: messageData?.message1?.content,
+          model1: JSON.parse(messageData?.message1).model,
+          model2: JSON.parse(messageData?.message2).model,
+          provider1: JSON.parse(messageData?.message1).provider,
+          provider2: JSON.parse(messageData?.message2).provider,
+          title: JSON.parse(messageData?.message1)?.content,
           userId: user._id,
         });
-        messageData.message1.compareId = String(createCompare._id);
-        messageData.message2.compareId = String(createCompare._id);
+        msg1.compareId = String(createCompare._id);
+        msg2.compareId = String(createCompare._id);
+      }
 
-        msg1 = {
-          ...messageData?.message1,
-          compareId: String(createCompare._id),
-        };
-
-        msg2 = {
-          ...messageData?.message2,
-          compareId: String(createCompare._id),
-        };
+      let paths: string[] = [];
+      
+      if (files && files?.length > 0) {
+        let fileUpload = await this.addFile(files, user);
+        msg1.images = fileUpload.fileIds;
+        msg2.images = fileUpload.fileIds;
+        paths = fileUpload.paths;
       }
 
       let aiResponse1 = this.addNewMsg(
         msg1 as singleCompare,
         user,
         messageData?.submitType == 'evaluate' ? 'started' : 'notStarted',
+        paths,
       );
       let aiResponse2 = this.addNewMsg(
         msg2 as singleCompare,
         user,
         messageData?.submitType == 'evaluate' ? 'started' : 'notStarted',
+        paths,
       );
 
       let newData = await Promise.all([aiResponse1, aiResponse2]);
@@ -238,7 +296,7 @@ export class CompareService {
           user,
           newData[0],
           newData[1],
-          messageData?.selectedMetrics,
+          JSON.parse(messageData?.selectedMetrics),
         );
       }
 
@@ -302,6 +360,35 @@ export class CompareService {
         let message2 = results.find(
           (item) => String(item._id) == String(rightSide._id),
         ).messages;
+
+        for (let i = 0; i < message1.length; i++) {
+          const item = message1[i];
+          if (item?.images && item?.images.length > 0) {
+            const updatedImages = await Promise.all(
+              item.images.map(async (singleImg) => {
+                let file = await this.userFiles.findById(singleImg);
+                let url = await this.storageService.getTemporaryUrl(file?.path);
+                return url;
+              }),
+            );
+
+            item.images = updatedImages;
+          }
+        }
+        for (let i = 0; i < message2.length; i++) {
+          const item = message2[i];
+          if (item?.images && item?.images.length > 0) {
+            const updatedImages = await Promise.all(
+              item.images.map(async (singleImg) => {
+                let file = await this.userFiles.findById(singleImg);
+                let url = await this.storageService.getTemporaryUrl(file?.path);
+                return url;
+              }),
+            );
+
+            item.images = updatedImages;
+          }
+        }
 
         return {
           page,

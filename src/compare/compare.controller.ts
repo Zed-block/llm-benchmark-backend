@@ -3,15 +3,23 @@ import {
   Body,
   Controller,
   Get,
+  ParseFilePipeBuilder,
   Post,
   Query,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CompareService } from './compare.service';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { CuurentUser } from 'src/auth/dto/currentUser.dto';
-import { compareAsk, compareRes } from './dto/askLlmRouterQuestion';
+import {
+  compareAsk,
+  compareAskFromData,
+  compareRes,
+} from './dto/askLlmRouterQuestion';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('compare')
 export class CompareController {
@@ -20,9 +28,19 @@ export class CompareController {
   // ask a new chat message
   @UseGuards(AuthGuard())
   @Post('askNewQuestion')
-  async ask(@Body() chatData: compareAsk, @CurrentUser() user: CuurentUser) {
+  @UseInterceptors(
+    FilesInterceptor('files', 6, {
+      limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max file size
+    }),
+  )
+  async ask(
+    @Body() chatData: compareAskFromData,
+    @CurrentUser() user: CuurentUser,
+    @UploadedFiles(new ParseFilePipeBuilder().build({ fileIsRequired: false }))
+    files: any[],
+  ) {
     try {
-      return await this.compareService.ask(chatData, user);
+      return await this.compareService.ask(chatData, user, files);
     } catch (error) {
       throw new BadGatewayException(error?.message);
     }

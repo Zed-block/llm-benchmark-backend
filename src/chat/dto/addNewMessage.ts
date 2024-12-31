@@ -13,9 +13,21 @@ export class askQuestion {
   topicId?: string;
   submitType: string;
   evaluateStatus: string;
-  selectedMetrics?: string[];
-  context?: string[];
+  selectedMetrics?: string;
+  context?: string;
+  images?: any[];
+  image_list?: string[];
 }
+
+export class singleAiType {
+  system_prompt: string;
+  user_query: string;
+  model_name: string;
+  user_id: string;
+  temperature: number;
+  image_list?: string[];
+}
+
 
 export class askQuestionForCompare {
   messageId: string;

@@ -8,7 +8,7 @@ export class Message {
   @Prop({ required: true })
   messageId: string;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   content: string;
 
   @Prop({ required: true, enum: ['user', 'assistant'] })
@@ -88,6 +88,9 @@ export class Message {
 
   @Prop({ required: false, type: Object })
   evaluateRes: Object;
+
+  @Prop({ required: false })
+  images: mongoose.Types.ObjectId[];
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);
