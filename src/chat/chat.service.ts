@@ -186,11 +186,11 @@ export class ChatService {
         const uploadPromises = files.map(async (file) => {
           const path = `${user._id}/${new Date().toISOString()}/${file?.originalname}`;
 
-          this.uploadFiles(file, user, path).then(async (res: any) => {
-            fileIds.push(res._id);
-            let url = await this.storageService.getTemporaryUrl(res?.path);
-            paths.push(url);
-          });
+          let fileUpload: any = await this.uploadFiles(file, user, path);
+
+          fileIds.push(fileUpload._id);
+          let url = await this.storageService.getTemporaryUrl(fileUpload?.path);
+          paths.push(url);
         });
 
         await Promise.all(uploadPromises);
