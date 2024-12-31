@@ -47,15 +47,19 @@ export class UserFilesService {
 
   async deleteFile(id: string) {
     try {
-      const file = await this.userFilesModel.findById(new mongoose.Types.ObjectId(id))
+      const file = await this.userFilesModel.findById(
+        new mongoose.Types.ObjectId(id),
+      );
 
-      if(!file){
-        throw new BadRequestException("No file exist");
+      if (!file) {
+        throw new BadRequestException('No file exist');
       }
 
-      this.storageService.delete(file?.path)
+      this.storageService.delete(file?.path);
 
-      return  await this.userFilesModel.findByIdAndDelete(new mongoose.Types.ObjectId(id))
+      return await this.userFilesModel.findByIdAndDelete(
+        new mongoose.Types.ObjectId(id),
+      );
     } catch (err: any) {
       throw new BadRequestException(err.message);
     }
@@ -75,7 +79,7 @@ export class UserFilesService {
 
     // Find user prompts with filters
     const userfiles = await this.userFilesModel
-      .find({ ...filters, userId: user._id })
+      .find({ ...filters, userId: user._id, type: 'metric' })
       .sort({ createdAt: -1 })
       .exec();
 

@@ -1,7 +1,11 @@
 import { BadGatewayException, Injectable } from '@nestjs/common';
 import mongoose, { Model } from 'mongoose';
 import { CuurentUser } from 'src/auth/dto/currentUser.dto';
-import { askQuestion, askQuestionForCompare } from 'src/chat/dto/addNewMessage';
+import {
+  askQuestion,
+  askQuestionForCompare,
+  singleAiType,
+} from 'src/chat/dto/addNewMessage';
 import { Message, MessageDocument } from 'src/chat/schema/message.schema';
 import { v4 as uuidv4 } from 'uuid';
 import { chatReply, chatReplyForCompare } from './dto/addNewMessage';
@@ -48,16 +52,20 @@ export class AiServiceService {
     messageData: askQuestion,
     user: CuurentUser,
     evaluateStatus,
+    image_list: string[] | [],
   ): Promise<chatReply> {
     try {
-      console.log('evaluateStatus; ', evaluateStatus);
-      let body = {
+      let body: singleAiType = {
         system_prompt: messageData?.instruction,
         user_query: messageData?.content,
         model_name: messageData?.model,
         user_id: String(user?._id),
         temperature: messageData?.temperature,
       };
+
+      if (image_list?.length > 0) {
+        body.image_list = image_list;
+      }
 
       let response: singleAiChatRes = await this.getAiRes(body);
 
@@ -103,15 +111,20 @@ export class AiServiceService {
     messageData: askQuestionForCompare,
     user: CuurentUser,
     evaluateStatus: string,
+    image_list: string[] | [],
   ): Promise<chatReplyForCompare> {
     try {
-      let body = {
+      let body: singleAiType = {
         system_prompt: messageData?.instruction,
         user_query: messageData?.content,
         model_name: messageData?.model,
         user_id: String(user?._id),
         temperature: messageData?.temperature,
       };
+
+      if (image_list?.length > 0) {
+        body.image_list = image_list;
+      }
 
       let response: singleAiChatRes = await this.getAiRes(body);
 
@@ -283,11 +296,16 @@ export class AiServiceService {
         data?.evaluation_metrice != 'LLMContexRecall'
       ) {
         if (data?.evaluation_type === 'pointwise') {
-          const { evaluation_metrice, evaluation_type, custom_metrice_data } =
-            data;
+          const {
+            evaluation_metrice,
+            evaluation_type,
+            custom_metrice_data,
+            judge_model,
+          } = data;
           const newMsgData: pointWiseData = {
             evaluation_metrice,
             evaluation_type,
+            judge_model,
           };
 
           // Initialize custom_metrice_data if applicable
@@ -338,10 +356,12 @@ export class AiServiceService {
             custom_metrice_data,
             response_model_name,
             baseline_model_name,
+            judge_model,
           } = data;
           const newMsgData: pairWiseData = {
             evaluation_metrice,
             evaluation_type,
+            judge_model,
           };
 
           // Initialize custom_metrice_data if applicable

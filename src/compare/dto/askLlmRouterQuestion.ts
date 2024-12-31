@@ -36,6 +36,14 @@ export class compareAsk {
   };
 }
 
+export class compareAskFromData {
+  submitType: string;
+  selectedMetrics?: string;
+  context?: string;
+  message1: string;
+  message2: string;
+}
+
 export class singleCompare {
   messageId: string;
   content: string;
@@ -50,6 +58,7 @@ export class singleCompare {
   compareId: string;
   compareQuestionId: string;
   compareSide: string;
+  images?: any;
 }
 
 export class compareRunMetrics {

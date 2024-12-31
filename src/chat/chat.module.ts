@@ -6,7 +6,12 @@ import { Message, MessageSchema } from './schema/message.schema';
 import { AiServiceModule } from 'src/ai-service/ai-service.module';
 import { PassportModule } from '@nestjs/passport';
 import { TopicModule } from 'src/topic/topic.module';
-import { RoutingModels, RoutingModelsSchema } from './schema/routing_models.schema';
+import {
+  RoutingModels,
+  RoutingModelsSchema,
+} from './schema/routing_models.schema';
+import { UserFiles, UserFilesSchema } from 'src/user-files/user-files.schema';
+import { StorageModule } from 'src/storage/storage.module';
 
 const passportModule = PassportModule.register({
   defaultStrategy: 'jwt',
@@ -15,10 +20,14 @@ const passportModule = PassportModule.register({
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Message.name, schema: MessageSchema }]),
-    MongooseModule.forFeature([{ name: RoutingModels.name, schema: RoutingModelsSchema }]),
+    MongooseModule.forFeature([
+      { name: RoutingModels.name, schema: RoutingModelsSchema },
+      { name: UserFiles.name, schema: UserFilesSchema },
+    ]),
     AiServiceModule,
     passportModule,
-    TopicModule
+    TopicModule,
+    StorageModule,
   ],
   providers: [ChatService],
   controllers: [ChatController],

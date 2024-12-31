@@ -8,14 +8,18 @@ import { TopicService } from 'src/topic/topic.service';
 import { askQuestion, askQuestionRes } from './dto/addNewMessage';
 import { RoutingModels } from './schema/routing_models.schema';
 import { EvalutionRun } from './dto/evaluation';
+import { UserFiles, UserFilesDocument } from 'src/user-files/user-files.schema';
+import { StorageService } from 'src/storage/storage.service';
 
 @Injectable()
 export class ChatService {
   constructor(
     @InjectModel(Message.name) private messageModel: Model<MessageDocument>,
     @InjectModel(RoutingModels.name) private routerModule: Model<RoutingModels>,
+    @InjectModel(UserFiles.name) private userFiles: Model<UserFilesDocument>,
     private readonly aiService: AiServiceService,
     private readonly topicService: TopicService,
+    private readonly storageService: StorageService,
   ) {}
 
   async createChat(chatData: Partial<Message>): Promise<Message> {
@@ -135,11 +139,30 @@ export class ChatService {
     }
   }
 
+  async uploadFiles(file, user, path) {
+    try {
+      const newFile = {
+        userId: user._id,
+        fileName: file.originalname,
+        path: path,
+        type: file.mimetype,
+        fileFrom: 'chat',
+      };
+
+      this.storageService.save(path, file?.buffer);
+      return await this.userFiles.create(newFile);
+    } catch (err) {
+      throw new BadGatewayException(err.message);
+    }
+  }
+
   async ask(
     messageData: askQuestion,
     user: CuurentUser,
+    files?: any,
   ): Promise<askQuestionRes> {
     try {
+      console.log('messageData: ', messageData);
       if (!messageData?.topicId) {
         let topicBody = {
           type: messageData?.type,
@@ -152,8 +175,25 @@ export class ChatService {
         let topic = await this.topicService.createTopic(topicBody);
         messageData.topicId = String(topic._id);
       }
+      const paths: string[] = [];
 
-      // Step 1: Save the message to the database
+      if (files) {
+        const fileIds: mongoose.Types.ObjectId[] = [];
+
+        const uploadPromises = files.map(async (file) => {
+          const path = `${user._id}/${new Date().toISOString()}/${file?.originalname}`;
+
+          this.uploadFiles(file, user, path).then(async (res: any) => {
+            fileIds.push(res._id);
+            let url = await this.storageService.getTemporaryUrl(res?.path);
+            paths.push(url);
+          });
+        });
+
+        await Promise.all(uploadPromises);
+        messageData.images = fileIds;
+      }
+
       await this.createChat({
         ...messageData,
         userId: user._id,
@@ -167,14 +207,21 @@ export class ChatService {
         messageData,
         user,
         messageData?.submitType == 'evaluate' ? 'started' : 'notStarted',
+        paths,
       );
 
       if (messageData?.submitType == 'evaluate') {
+        if (messageData?.context) {
+          messageData.content = JSON.parse(messageData?.context);
+        }
+        if (messageData?.selectedMetrics) {
+          messageData.selectedMetrics = JSON.parse(messageData.selectedMetrics);
+        }
         this.runEvaluvation(
           messageData,
           user,
           aiResponse,
-          messageData?.selectedMetrics,
+          JSON.parse(messageData.selectedMetrics),
         );
       }
 
@@ -313,12 +360,22 @@ export class ChatService {
         lastMessageIndex = index > 0 ? index + 1 : 0;
       }
 
-      const paginatedMessages = messages.slice(
-        lastMessageIndex,
-        lastMessageIndex + limit,
-      );
-
       const next = lastMessageIndex + limit < messages.length;
+
+      for (let i = 0; i < messages.length; i++) {
+        const item = messages[i];
+        if (item?.images && item?.images.length > 0) {
+          const updatedImages = await Promise.all(
+            item.images.map(async (singleImg) => {
+              let file = await this.userFiles.findById(singleImg);
+              let url = await this.storageService.getTemporaryUrl(file?.path);
+              return url;
+            }),
+          );
+
+          item.images = updatedImages;
+        }
+      }
 
       return {
         messages: messages.reverse(),
