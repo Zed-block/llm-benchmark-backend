@@ -23,8 +23,13 @@ export class ChatService {
   ) {}
 
   async createChat(chatData: Partial<Message>): Promise<Message> {
-    const newChat = new this.messageModel(chatData);
-    return newChat.save();
+    try {
+      const newChat = new this.messageModel(chatData);
+      return newChat.save();
+    } catch (err) {
+      console.log('err at save chart', err.message);
+      throw new BadGatewayException(err.message);
+    }
   }
 
   async runEvaluvation(data: askQuestion, user, aiRes: any, metrics: string[]) {
@@ -214,17 +219,19 @@ export class ChatService {
       );
 
       if (messageData?.submitType == 'evaluate') {
+        let selectedMetricsArr 
         if (messageData?.context) {
           messageData.content = JSON.parse(messageData?.context);
         }
         if (messageData?.selectedMetrics) {
+          selectedMetricsArr = JSON.parse(messageData.selectedMetrics)
           messageData.selectedMetrics = JSON.parse(messageData.selectedMetrics);
         }
         this.runEvaluvation(
           messageData,
           user,
           aiResponse,
-          JSON.parse(messageData.selectedMetrics),
+          selectedMetricsArr,
         );
       }
 

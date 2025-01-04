@@ -44,8 +44,12 @@ export class AiServiceService {
 
   // Create a new chat message
   async createChat(chatData: Partial<Message>): Promise<Message> {
-    const newChat = new this.messageModel(chatData);
-    return newChat.save();
+    try {
+      return await this.messageModel.create(chatData);
+    } catch (err) {
+      console.log('err at save chat ai res', err.message);
+      throw new BadGatewayException(err.message);
+    }
   }
 
   async getResponse(
