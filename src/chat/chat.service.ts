@@ -174,10 +174,7 @@ export class ChatService {
           userId: user?._id,
           model: messageData?.model,
           provider: messageData?.provider,
-          title:
-            messageData?.content || files?.length > 0
-              ? 'image-query'
-              : 'unknown',
+          title:  messageData?.content,
           temperature: messageData?.temperature,
         };
         let topic = await this.topicService.createTopic(topicBody);
@@ -219,20 +216,15 @@ export class ChatService {
       );
 
       if (messageData?.submitType == 'evaluate') {
-        let selectedMetricsArr 
+        let selectedMetricsArr;
         if (messageData?.context) {
           messageData.content = JSON.parse(messageData?.context);
         }
         if (messageData?.selectedMetrics) {
-          selectedMetricsArr = JSON.parse(messageData.selectedMetrics)
+          selectedMetricsArr = JSON.parse(messageData.selectedMetrics);
           messageData.selectedMetrics = JSON.parse(messageData.selectedMetrics);
         }
-        this.runEvaluvation(
-          messageData,
-          user,
-          aiResponse,
-          selectedMetricsArr,
-        );
+        this.runEvaluvation(messageData, user, aiResponse, selectedMetricsArr);
       }
 
       return aiResponse;

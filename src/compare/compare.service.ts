@@ -184,9 +184,7 @@ export class CompareService {
         let topic = await this.topicService.createTopicForCompare({
           type: messageData?.type,
           userId: user?._id,
-          title: messageData?.content || paths?.length > 0
-          ? 'image-query'
-          : 'unknown',
+          title: messageData?.content,
           compareId: new mongoose.Types.ObjectId(messageData?.compareId),
           compareSide: messageData?.compareSide,
           model: messageData?.model,
@@ -238,7 +236,6 @@ export class CompareService {
         });
 
         await Promise.all(uploadPromises);
-
       }
 
       return {
