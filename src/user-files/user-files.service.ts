@@ -32,6 +32,7 @@ export class UserFilesService {
             path: path,
             type: file.mimetype,
             metricType: parsedType,
+            fileFrom: 'metric',
           };
 
           // Save file metadata to database
@@ -79,7 +80,7 @@ export class UserFilesService {
 
     // Find user prompts with filters
     const userfiles = await this.userFilesModel
-      .find({ ...filters, userId: user._id, type: 'metric' })
+      .find({ ...filters, userId: user._id, fileFrom: 'metric' })
       .sort({ createdAt: -1 })
       .exec();
 
