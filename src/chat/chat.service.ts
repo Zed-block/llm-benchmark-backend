@@ -154,7 +154,7 @@ export class ChatService {
         fileFrom: 'chat',
       };
 
-      this.storageService.save(path, file?.buffer);
+      await this.storageService.save(path, file?.buffer);
       return await this.userFiles.create(newFile);
     } catch (err) {
       throw new BadGatewayException(err.message);
