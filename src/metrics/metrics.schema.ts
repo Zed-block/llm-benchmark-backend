@@ -60,6 +60,9 @@ export class Metrics {
   response: string;
 
   @Prop({ required: false })
+  judge_model: string;
+
+  @Prop({ required: false })
   messageTopic: mongoose.Types.ObjectId;
 
   @Prop({ required: false })

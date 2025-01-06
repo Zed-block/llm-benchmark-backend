@@ -108,6 +108,9 @@ export class MetricsService {
         outputCost,
         totalCost,
         timeTaken: res?.total_time || 0,
+        ...(messageData?.judge_model && {
+          judge_model: messageData.judge_model,
+        }),
       });
       return {
         response: res?.response,
@@ -153,6 +156,9 @@ export class MetricsService {
         ...messageData,
         topicId: new mongoose.Types.ObjectId(messageData?.topicId),
         userId: user._id,
+        ...(messageData?.judge_model && {
+          judge_model: messageData.judge_model,
+        }),
       });
       return {
         response: res,
