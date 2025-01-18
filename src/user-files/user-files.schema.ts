@@ -8,8 +8,11 @@ export class UserFiles {
   @Prop({ required: true })
   userId: mongoose.Types.ObjectId;
 
-  @Prop({ required: false })
+  @Prop({ required: true })
   fileName: string;
+
+  @Prop({ required: false })
+  description: string;
 
   @Prop({ required: false })
   path: string;
