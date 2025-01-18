@@ -231,6 +231,7 @@ export class MetricsService {
         let metricRes = await this.MetricsModel.findOne({
           topicId: new mongoose.Types.ObjectId(String(runId)),
         });
+        let storeData;
 
         if (!metricRes?.response) {
           let res = [];
@@ -245,7 +246,7 @@ export class MetricsService {
             }
           });
 
-          await this.MetricsModel.findOneAndUpdate(
+          storeData = await this.MetricsModel.findOneAndUpdate(
             {
               topicId: new mongoose.Types.ObjectId(String(runId)),
             },
@@ -261,6 +262,7 @@ export class MetricsService {
           response: data,
           resType: 'COMPLETED',
           message: null,
+          judge_modle:storeData?.judge_model
         };
       }
       if (status?.status === 'PROCESSING') {

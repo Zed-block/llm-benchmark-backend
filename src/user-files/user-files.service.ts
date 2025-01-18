@@ -18,7 +18,7 @@ export class UserFilesService {
     try {
       for (const file of files) {
         try {
-          const path = `${user._id}/${new Date().toISOString()}/${body?.name}`;
+          const path = `${user._id}/${new Date().toISOString()}/${body?.name}.${file.originalname.split(".").pop()}`;
 
           // Save file to external storage
           await this.storageService.save(path, file?.buffer);
