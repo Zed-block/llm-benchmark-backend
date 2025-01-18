@@ -4,6 +4,7 @@ import { UserFiles, UserFilesDocument } from './user-files.schema';
 import mongoose, { Model } from 'mongoose';
 import { StorageService } from 'src/storage/storage.service';
 import { CuurentUser } from 'src/auth/dto/currentUser.dto';
+import { AddFile } from './dto/ask';
 
 @Injectable()
 export class UserFilesService {
@@ -13,22 +14,20 @@ export class UserFilesService {
     private readonly storageService: StorageService,
   ) {}
 
-  async addFile(user, files: any, parsedType: string[]) {
+  async addFile(user, files: any, parsedType: string[], body: AddFile) {
     try {
       for (const file of files) {
         try {
-          const path = `${user._id}/${new Date().toISOString()}/${file?.originalname}`;
+          const path = `${user._id}/${new Date().toISOString()}/${body?.name}.${file.originalname.split(".").pop()}`;
 
           // Save file to external storage
-          const uploadedPath = await this.storageService.save(
-            path,
-            file?.buffer,
-          );
+          await this.storageService.save(path, file?.buffer);
 
           // Create file metadata
           const newFile = {
             userId: user._id,
-            fileName: file.originalname,
+            fileName: body?.name,
+            description: body?.description,
             path: path,
             type: file.mimetype,
             metricType: parsedType,
@@ -36,7 +35,7 @@ export class UserFilesService {
           };
 
           // Save file metadata to database
-          const savedFile = await this.userFilesModel.create(newFile);
+          await this.userFilesModel.create(newFile);
         } catch (err: any) {
           throw new Error(`Failed to upload file: ${file.originalname}`);
         }

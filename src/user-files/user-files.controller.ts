@@ -19,6 +19,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { CuurentUser } from 'src/auth/dto/currentUser.dto';
+import { AddFile } from './dto/ask';
 
 @Controller('user-files')
 export class UserFilesController {
@@ -29,11 +30,11 @@ export class UserFilesController {
   @UseInterceptors(FilesInterceptor('files', 10)) // Allow up to 10 files
   async uploadMultipleFiles(
     @UploadedFiles() files: any[],
-    @Body('type') type: string,
+    @Body() body: AddFile,
     @CurrentUser() user: CuurentUser,
   ) {
-    const parsedType = JSON.parse(type);
-    return await this.userFilesService.addFile(user, files, parsedType);
+    const parsedType = JSON.parse(body.type);
+    return await this.userFilesService.addFile(user, files, parsedType,body);
   }
 
   @UseGuards(AuthGuard('jwt'))
